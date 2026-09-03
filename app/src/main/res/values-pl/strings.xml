@@ -10,4 +10,5 @@
     <string name="next_button">Następne</string>
     <string name="refresh_button">Odśwież</string>
     <string name="no_classes">Brak zajęć</string>
+    <string name="import_schedule_button">Importuj harmonogram z pliku .html</string>
 </resources>
