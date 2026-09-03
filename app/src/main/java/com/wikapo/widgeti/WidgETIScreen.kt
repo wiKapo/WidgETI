@@ -1,6 +1,7 @@
 package com.wikapo.widgeti
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -56,7 +57,7 @@ fun WidgETIAppBar(
                 IconButton(onClick = navigateUp) {
                     Icon(
                         painter = painterResource(R.drawable.arrow_back),
-                        contentDescription = "Back button"
+                        contentDescription = stringResource(R.string.back_button)
                     )
                 }
             }
@@ -88,7 +89,7 @@ fun WidgETIApp(
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.settings),
-                        contentDescription = "settings"
+                        contentDescription = stringResource(R.string.settings)
                     )
                 }
         },
@@ -114,19 +115,19 @@ fun WidgETIFooter() {
     Row(
         modifier = Modifier
             .padding(bottom = 20.dp)
-//            .background(color = MaterialTheme.colorScheme.outlineVariant)
+            .background(color = MaterialTheme.colorScheme.outlineVariant)
             .fillMaxWidth(),
         horizontalArrangement = Arrangement.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Row {
                 Text(
-                    text = "Aplikacja wykonana przez ",
+                    text = stringResource(R.string.footer) + " ",
                     fontWeight = FontWeight(400),
                     color = MaterialTheme.colorScheme.onSurface,
                 )
                 Text(
-                    text = "wiKapo",
+                    text = stringResource(R.string.author),
                     fontWeight = FontWeight(800),
                     color = MaterialTheme.colorScheme.onSurface,
                 )

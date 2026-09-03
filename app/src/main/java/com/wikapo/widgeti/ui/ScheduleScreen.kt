@@ -30,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -91,7 +92,7 @@ fun ScheduleScreen(
             ) {
                 Icon(
                     painter = painterResource(R.drawable.arrow_back),
-                    contentDescription = "previous"
+                    contentDescription = stringResource(R.string.previous_button)
                 )
             }
             TextButton(
@@ -110,7 +111,7 @@ fun ScheduleScreen(
             ) {
                 Icon(
                     painter = painterResource(R.drawable.arrow_forward),
-                    contentDescription = "next"
+                    contentDescription = stringResource(R.string.next_button)
                 )
             }
         }
@@ -200,7 +201,7 @@ fun ScheduleScreen(
                         ) {
                             Icon(
                                 painter = painterResource(R.drawable.refresh),
-                                contentDescription = "refresh"
+                                contentDescription = stringResource(R.string.refresh_button)
                             )
                         }
                     }
@@ -222,7 +223,7 @@ fun ScheduleScreen(
                     )
                 else
                     Text(
-                        text = "BRAK ZAJĘĆ",
+                        text = stringResource(R.string.no_classes),
                         textAlign = TextAlign.Center,
                         color = MaterialTheme.colorScheme.onSurface
 

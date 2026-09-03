@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widgeti_description">Opis :></string>
+
+    <string name="settings">Ustawienia</string>
+    <string name="widget_error_title">Wystąpił problem z Widgetem</string>
+    <string name="footer">Aplikacja wykonana przez</string>
+    <string name="back_button">Powróć</string>
+    <string name="previous_button">Poprzednie</string>
+    <string name="next_button">Następne</string>
+    <string name="refresh_button">Odśwież</string>
+    <string name="no_classes">Brak zajęć</string>
+</resources>

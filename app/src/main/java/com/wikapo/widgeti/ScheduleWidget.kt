@@ -12,6 +12,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.glance.ColorFilter
 import androidx.glance.GlanceId
@@ -140,7 +141,7 @@ fun ScheduleContent(previewMode: Boolean = false) {
                 Image(
                     modifier = GlanceModifier.padding(6.dp),
                     provider = ImageProvider(R.drawable.arrow_back),
-                    contentDescription = "previous",
+                    contentDescription = stringResource(R.string.previous_button),
                     colorFilter = ColorFilter.tint(GlanceTheme.colors.inverseOnSurface)
                 )
             }
@@ -158,7 +159,7 @@ fun ScheduleContent(previewMode: Boolean = false) {
                 Image(
                     modifier = GlanceModifier.padding(6.dp),
                     provider = ImageProvider(R.drawable.arrow_forward),
-                    contentDescription = "next",
+                    contentDescription = stringResource(R.string.next_button),
                     colorFilter = ColorFilter.tint(GlanceTheme.colors.inverseOnSurface)
                 )
             }
@@ -288,7 +289,7 @@ fun ScheduleContent(previewMode: Boolean = false) {
                             Image(
                                 modifier = GlanceModifier.padding(6.dp).fillMaxSize(),
                                 provider = ImageProvider(R.drawable.refresh),
-                                contentDescription = "refresh",
+                                contentDescription = stringResource(R.string.refresh_button),
                                 colorFilter = ColorFilter.tint(GlanceTheme.colors.inverseOnSurface)
                             )
                         }
@@ -311,7 +312,7 @@ fun ScheduleContent(previewMode: Boolean = false) {
                     )
                 else
                     Text(
-                        text = "BRAK ZAJĘĆ",
+                        text = stringResource(R.string.no_classes),
                         style = TextStyle(
                             textAlign = TextAlign.Center,
                             color = GlanceTheme.colors.onSurface
