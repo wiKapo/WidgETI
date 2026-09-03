@@ -2,4 +2,5 @@
     <string name="app_name">WidgETI</string>
     <string name="widgeti_description">Opis :></string>
     <string name="widget_error_title">Schedule Widget Error</string>
+    <string name="settings">Ustawienia</string>
 </resources>
