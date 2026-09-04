@@ -11,4 +11,6 @@
     <string name="refresh_button">Odśwież</string>
     <string name="no_classes">Brak zajęć</string>
     <string name="import_schedule_button">Importuj harmonogram z pliku .html</string>
+    <string name="manage_schedule">Zarządzaj harmonogramem</string>
+    <string name="manage_calendar">Zarządzaj kalendarzem</string>
 </resources>

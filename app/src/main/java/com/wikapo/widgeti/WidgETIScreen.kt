@@ -37,7 +37,9 @@ import java.time.LocalDate
 
 enum class WidgETIScreen(@StringRes val title: Int) {
     Start(title = R.string.app_name),
-    Settings(title = R.string.settings)
+    Settings(title = R.string.settings),
+    ManageSchedule(title = R.string.manage_schedule),
+    ManageCalendar(title = R.string.manage_calendar),
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

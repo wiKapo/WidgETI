@@ -11,4 +11,6 @@
     <string name="refresh_button">Refresh</string>
     <string name="no_classes">No classes</string>
     <string name="import_schedule_button">Import schedule from .html file</string>
+    <string name="manage_schedule">Manage schedule</string>
+    <string name="manage_calendar">Manage calendar</string>
 </resources>

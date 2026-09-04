@@ -50,6 +50,7 @@ import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
+import com.wikapo.widgeti.data.Lesson
 import kotlinx.coroutines.time.delay
 import java.time.Duration
 import java.time.LocalDate
@@ -98,20 +99,20 @@ fun ScheduleContent(previewMode: Boolean = false) {
     val loading = remember { mutableStateOf(false) }
     val date = remember { mutableStateOf(LocalDate.now()) }
     val update = remember { mutableIntStateOf(0) }
-    val scheduleInstance = ScheduleRequester()
+//    val scheduleInstance = ScheduleRequester()
 
     val size = LocalSize.current
     val currentTime = LocalTime.now()
-
-    if (previewMode)
-        schedule.addAll(scheduleInstance.getExampleSchedule(10))
+//
+//    if (previewMode)
+//        schedule.addAll(scheduleInstance.getExampleSchedule(10))
 
     LaunchedEffect(date.value, update.intValue) {
         Log.d("UPDATE val", update.intValue.toString())
         loading.value = true
         schedule.clear()
         if (!previewMode) {
-            schedule.addAll(scheduleInstance.fetchSchedule(date.value))
+//            schedule.addAll(scheduleInstance.fetchSchedule(date.value))
             delay(Duration.ofMillis(200))
             loading.value = false
         }
@@ -177,124 +178,125 @@ fun ScheduleContent(previewMode: Boolean = false) {
                         modifier = GlanceModifier.fillMaxWidth().padding(bottom = 6.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        when (lesson.subjectId) {
-                            "ERR" -> Text(
-                                text = lesson.name,
-                                style = TextStyle(
-                                    color = GlanceTheme.colors.onError
-                                ),
-                                modifier = GlanceModifier
-                                    .background(GlanceTheme.colors.error)
-                                    .fillMaxWidth()
-                                    .padding(7.5.dp)
-                                    .cornerRadius(12.5.dp)
-                            )
-
-                            "TIMEOUT" -> {
-                                Text(
-                                    text = lesson.name,
-                                    style = TextStyle(
-                                        color = GlanceTheme.colors.onErrorContainer
-                                    ),
-                                    modifier = GlanceModifier
-                                        .background(GlanceTheme.colors.errorContainer)
-                                        .fillMaxWidth()
-                                        .padding(7.5.dp)
-                                        .cornerRadius(12.5.dp)
-                                )
-                            }
-
-                            else -> Box(modifier = GlanceModifier.cornerRadius(12.5.dp)) {
-                                Column(
-                                    modifier = GlanceModifier
-                                        .padding(10.dp, 5.dp)
-                                        .background(if (index % 2 == 1) GlanceTheme.colors.secondaryContainer else GlanceTheme.colors.tertiaryContainer)
-                                        .clickable(
-                                            onClick = actionStartActivity<MainActivity>(
-                                                parameters = actionParametersOf(
-                                                    pairs = arrayOf(
-                                                        ActionParameters.Key<LocalDate>("date") to date.value
-                                                    )
-                                                )
-                                            )
-                                        )
-                                ) {
-                                    val textColor =
-                                        if (date.value > LocalDate.now() || currentTime.hour < lesson.endHour && date.value == LocalDate.now())
-                                            GlanceTheme.colors.onSurface
-                                        else
-                                            GlanceTheme.colors.onSurfaceVariant
-                                    val secondaryTextColor =
-                                        if (date.value > LocalDate.now() || currentTime.hour < lesson.endHour && date.value == LocalDate.now())
-                                            GlanceTheme.colors.onSurfaceVariant
-                                        else
-                                            GlanceTheme.colors.onSurfaceVariant
-                                    Text(
-                                        text = "DATE" + date.value + " NOW" + LocalDate.now(),
-//                                        text = if (size.width > 175.dp) "[${lesson.kind}]\t\t${lesson.name}"
-//                                        else {
-//                                            var result = "[${lesson.kind}]\t\t"
-//                                            lesson.name.split(" ")
-//                                                .forEach { s -> result += s[0].uppercase() }
-//                                            result
-//                                        },
-                                        style = TextStyle(
-                                            fontWeight = FontWeight.Bold,
-                                            color = textColor
-                                        ),
-                                        maxLines = 1
-                                    )
-                                    Row(modifier = GlanceModifier.fillMaxWidth()) {
-                                        Text(
-                                            text = if (size.width > 175.dp) "${lesson.startHour}:00 - ${lesson.endHour}:00"
-                                            else "${lesson.startHour} - ${lesson.endHour}",
-                                            style = TextStyle(color = secondaryTextColor)
-                                        )
-                                        Text(
-                                            modifier = GlanceModifier.fillMaxWidth(),
-                                            text = lesson.place,
-                                            style = TextStyle(
-                                                fontWeight = FontWeight.Bold,
-                                                textAlign = TextAlign.End,
-                                                color = textColor
-                                            )
-                                        )
-                                    }
-                                }
-                                if (!previewMode && date.value == LocalDate.now() &&
-                                    currentTime.hour >= lesson.startHour && currentTime.hour < lesson.endHour
-                                ) {
-                                    LinearProgressIndicator(
-                                        modifier = GlanceModifier
-                                            .fillMaxWidth()
-                                            .padding(top = (-6).dp)
-                                            .height(4.dp),
-                                        progress = (currentTime.minusHours(lesson.startHour.toLong())).toSecondOfDay() / ((lesson.endHour - lesson.startHour) * 3600f),
-                                        color = GlanceTheme.colors.primary,
-                                        backgroundColor = GlanceTheme.colors.primaryContainer
-                                    )
-                                }
-                            }
-                        }
+//                        when (lesson.subjectId) {
+//                            "ERR" -> Text(
+//                                text = lesson.name,
+//                                style = TextStyle(
+//                                    color = GlanceTheme.colors.onError
+//                                ),
+//                                modifier = GlanceModifier
+//                                    .background(GlanceTheme.colors.error)
+//                                    .fillMaxWidth()
+//                                    .padding(7.5.dp)
+//                                    .cornerRadius(12.5.dp)
+//                            )
+//
+//                            "TIMEOUT" -> {
+//                                Text(
+//                                    text = lesson.name,
+//                                    style = TextStyle(
+//                                        color = GlanceTheme.colors.onErrorContainer
+//                                    ),
+//                                    modifier = GlanceModifier
+//                                        .background(GlanceTheme.colors.errorContainer)
+//                                        .fillMaxWidth()
+//                                        .padding(7.5.dp)
+//                                        .cornerRadius(12.5.dp)
+//                                )
+//                            }
+//
+//                            else -> Box(modifier = GlanceModifier.cornerRadius(12.5.dp)) {
+//                                Column(
+//                                    modifier = GlanceModifier
+//                                        .padding(10.dp, 5.dp)
+//                                        .background(if (index % 2 == 1) GlanceTheme.colors.secondaryContainer else GlanceTheme.colors.tertiaryContainer)
+//                                        .clickable(
+//                                            onClick = actionStartActivity<MainActivity>(
+//                                                parameters = actionParametersOf(
+//                                                    pairs = arrayOf(
+//                                                        ActionParameters.Key<LocalDate>("date") to date.value
+//                                                    )
+//                                                )
+//                                            )
+//                                        )
+//                                ) {
+//                                    val textColor =
+//                                        if (date.value > LocalDate.now() || currentTime.hour < 12 && date.value == LocalDate.now())
+//                                            GlanceTheme.colors.onSurface
+//                                        else
+//                                            GlanceTheme.colors.onSurfaceVariant
+//                                    val secondaryTextColor =
+//                                        if (date.value > LocalDate.now() || currentTime.hour < 12 && date.value == LocalDate.now()) //TODO change 12 to lesson.endDateTime
+//                                            GlanceTheme.colors.onSurfaceVariant
+//                                        else
+//                                            GlanceTheme.colors.onSurfaceVariant
+//                                    Text(
+//                                        text = "DATE" + date.value + " NOW" + LocalDate.now(),
+////                                        text = if (size.width > 175.dp) "[${lesson.kind}]\t\t${lesson.name}"
+////                                        else {
+////                                            var result = "[${lesson.kind}]\t\t"
+////                                            lesson.name.split(" ")
+////                                                .forEach { s -> result += s[0].uppercase() }
+////                                            result
+////                                        },
+//                                        style = TextStyle(
+//                                            fontWeight = FontWeight.Bold,
+//                                            color = textColor
+//                                        ),
+//                                        maxLines = 1
+//                                    )
+//                                    Row(modifier = GlanceModifier.fillMaxWidth()) {
+//                                        Text(
+//                                            text = if (size.width > 175.dp) "START:00 - END:00"
+//                                            else "START - END", //TODO
+//                                            style = TextStyle(color = secondaryTextColor)
+//                                        )
+//                                        Text(
+//                                            modifier = GlanceModifier.fillMaxWidth(),
+//                                            text = lesson.place,
+//                                            style = TextStyle(
+//                                                fontWeight = FontWeight.Bold,
+//                                                textAlign = TextAlign.End,
+//                                                color = textColor
+//                                            )
+//                                        )
+//                                    }
+//                                }
+//                                if (!previewMode && date.value == LocalDate.now() //&&
+////                                    currentTime.hour >= lesson.startHour && currentTime.hour < lesson.endHour
+//                                ) {
+//                                    LinearProgressIndicator(
+//                                        modifier = GlanceModifier
+//                                            .fillMaxWidth()
+//                                            .padding(top = (-6).dp)
+//                                            .height(4.dp),
+////                                        progress = (currentTime.minusHours(lesson.startHour.toLong())).toSecondOfDay() / ((lesson.endHour - lesson.startHour) * 3600f),
+//                                        progress = 0.5f,
+//                                        color = GlanceTheme.colors.primary,
+//                                        backgroundColor = GlanceTheme.colors.primaryContainer
+//                                    )
+//                                }
+//                            }
+//                        }
                     }
                 }
-                if (schedule[0].subjectId == "ERR" || schedule[0].subjectId == "TIMEOUT") {
-                    item {
-                        Box(
-                            modifier = GlanceModifier
-                                .background(if (!loading.value) GlanceTheme.colors.primary else GlanceTheme.colors.secondary)
-                                .cornerRadius(15.dp)
-                                .size(50.dp)
-                                .clickable { if (!loading.value) update.intValue += 1 }) {
-                            Image(
-                                modifier = GlanceModifier.padding(6.dp).fillMaxSize(),
-                                provider = ImageProvider(R.drawable.refresh),
-                                contentDescription = stringResource(R.string.refresh_button),
-                                colorFilter = ColorFilter.tint(GlanceTheme.colors.inverseOnSurface)
-                            )
-                        }
-                    }
-                }
+//                if (schedule[0].subjectId == "ERR" || schedule[0].subjectId == "TIMEOUT") {
+//                    item {
+//                        Box(
+//                            modifier = GlanceModifier
+//                                .background(if (!loading.value) GlanceTheme.colors.primary else GlanceTheme.colors.secondary)
+//                                .cornerRadius(15.dp)
+//                                .size(50.dp)
+//                                .clickable { if (!loading.value) update.intValue += 1 }) {
+//                            Image(
+//                                modifier = GlanceModifier.padding(6.dp).fillMaxSize(),
+//                                provider = ImageProvider(R.drawable.refresh),
+//                                contentDescription = stringResource(R.string.refresh_button),
+//                                colorFilter = ColorFilter.tint(GlanceTheme.colors.inverseOnSurface)
+//                            )
+//                        }
+//                    }
+//                }
                 item {
                     Spacer(modifier = GlanceModifier.height(5.dp))
                 }

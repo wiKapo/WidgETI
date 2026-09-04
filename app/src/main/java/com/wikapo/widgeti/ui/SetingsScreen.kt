@@ -2,6 +2,7 @@ package com.wikapo.widgeti.ui
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
@@ -22,10 +23,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.wikapo.widgeti.R
+import com.wikapo.widgeti.data.Lesson
 import com.wikapo.widgeti.ui.theme.WidgETITheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.jsoup.Jsoup
+import java.time.LocalTime
 
 
 @Composable
@@ -48,7 +51,39 @@ fun SettingsScreen(
 
                         val rows = document.body().getElementsByTag("tr")
 
-                        parsedResult = rows.toString()
+                        val schedule: MutableList<Lesson> = mutableListOf()
+                        rows.forEach { row ->
+                            Log.i("TEST", "Read a row")
+                            val cells = row.getElementsByTag("td")
+                            cells.next()
+
+                            var time: LocalTime = LocalTime.MIN
+                            cells.forEachIndexed { index, cell ->
+                                if (index == 0) {
+                                    time = LocalTime.parse(cell.text())
+                                    return@forEachIndexed
+                                }
+                                if (cell.text() != "") { // TODO Obsługa kilku wydarzeń w danym polu
+                                    val place = cell.getElementsByClass("room_name").text()
+                                    val name = cell.getElementsByClass("subject_name").text()
+                                    val teacher = cell.ownText()
+                                    val boldedText = cell.getElementsByTag("b").eachText() // TODO Odczyt opcjonalnych grup, dat rozpoczęcia i zakończenia
+                                    val kind: Char = boldedText[1][1]
+                                    schedule.add(Lesson(
+                                        name = name,
+                                        kind = kind,
+                                        teacher = teacher,
+                                        place = place,
+                                        weekDay = index - 1,
+                                        startTime = time,
+                                        endTime = time.plusHours(1),
+                                    ))
+                                }
+                            }
+                            Log.d("READ SCHEDULE", schedule.toString())
+                        }
+
+                        parsedResult = schedule.toString()
                     }
                 } catch (e: Exception) {
                     parsedResult = "ERROR"

@@ -36,9 +36,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.wikapo.widgeti.Lesson
+import com.wikapo.widgeti.data.Lesson
 import com.wikapo.widgeti.R
-import com.wikapo.widgeti.ScheduleRequester
 import com.wikapo.widgeti.ui.theme.WidgETITheme
 import kotlinx.coroutines.time.delay
 import java.time.Duration
@@ -57,22 +56,22 @@ fun ScheduleScreen(
     else
         remember { mutableStateOf(LocalDate.now()) }
     val update = remember { mutableIntStateOf(0) }
-    val scheduleInstance = ScheduleRequester()
-    if (!doFetchSchedule)
-        schedule.addAll(scheduleInstance.getExampleSchedule(10))
+//    val scheduleInstance = ScheduleRequester()
+//    if (!doFetchSchedule)
+//        schedule.addAll(scheduleInstance.getExampleSchedule(10))
 
-    LaunchedEffect(date.value, update.intValue) {
-        Log.d("UPDATE val", update.intValue.toString())
-        loading.value = true
-        schedule.clear()
-        if (doFetchSchedule) {
-            schedule.addAll(scheduleInstance.fetchSchedule(date.value))
-            delay(Duration.ofMillis(200))
-            loading.value = false
-        }
-        loading.value = false
-        Log.d("CHECK UPDATE", schedule.toString())
-    }
+//    LaunchedEffect(date.value, update.intValue) {
+//        Log.d("UPDATE val", update.intValue.toString())
+//        loading.value = true
+//        schedule.clear()
+//        if (doFetchSchedule) {
+//            schedule.addAll(scheduleInstance.fetchSchedule(date.value))
+//            delay(Duration.ofMillis(200))
+//            loading.value = false
+//        }
+//        loading.value = false
+//        Log.d("CHECK UPDATE", schedule.toString())
+//    }
 
     Column(
         modifier = Modifier
@@ -130,82 +129,82 @@ fun ScheduleScreen(
                             .padding(bottom = 6.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        when (lesson.subjectId) {
-                            "ERR" -> Text(
-                                text = lesson.name,
-                                color = MaterialTheme.colorScheme.onError,
-                                modifier = Modifier
-                                    .background(MaterialTheme.colorScheme.error)
-                                    .fillMaxWidth()
-                                    .padding(7.5.dp)
-                            )
-
-                            "TIMEOUT" -> {
-                                Text(
-                                    text = lesson.name,
-                                    color = MaterialTheme.colorScheme.onErrorContainer,
-                                    modifier = Modifier
-                                        .background(MaterialTheme.colorScheme.errorContainer)
-                                        .fillMaxWidth()
-                                        .padding(7.5.dp)
-                                )
-                            }
-
-                            else -> Box(
-                                modifier = Modifier
-                                    .background(
-                                        color = if (index % 2 == 1) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.tertiaryContainer,
-                                        shape = MaterialTheme.shapes.large
-                                    )
-                            ) {
-                                Column(modifier = Modifier.padding(10.dp, 5.dp)) {
-                                    Text(
-                                        text = "[${lesson.kind}]\t\t${lesson.name}",
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onSurface,
-                                        modifier = Modifier.fillMaxWidth()
-                                    )
-                                    Text(
-                                        text = lesson.teacher,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween
-                                    ) {
-                                        Text(
-                                            text = "${lesson.startHour}:00 - ${lesson.endHour}:00",
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                        Text(
-                                            text = lesson.place,
-                                            fontWeight = FontWeight.Bold,
-                                            color = MaterialTheme.colorScheme.onSurface
-                                        )
-                                    }
-                                }
-                            }
-                        }
+//                        when (lesson.subjectId) {
+//                            "ERR" -> Text(
+//                                text = lesson.name,
+//                                color = MaterialTheme.colorScheme.onError,
+//                                modifier = Modifier
+//                                    .background(MaterialTheme.colorScheme.error)
+//                                    .fillMaxWidth()
+//                                    .padding(7.5.dp)
+//                            )
+//
+//                            "TIMEOUT" -> {
+//                                Text(
+//                                    text = lesson.name,
+//                                    color = MaterialTheme.colorScheme.onErrorContainer,
+//                                    modifier = Modifier
+//                                        .background(MaterialTheme.colorScheme.errorContainer)
+//                                        .fillMaxWidth()
+//                                        .padding(7.5.dp)
+//                                )
+//                            }
+//
+//                            else -> Box(
+//                                modifier = Modifier
+//                                    .background(
+//                                        color = if (index % 2 == 1) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.tertiaryContainer,
+//                                        shape = MaterialTheme.shapes.large
+//                                    )
+//                            ) {
+//                                Column(modifier = Modifier.padding(10.dp, 5.dp)) {
+//                                    Text(
+//                                        text = "[${lesson.kind}]\t\t${lesson.name}",
+//                                        fontWeight = FontWeight.Bold,
+//                                        color = MaterialTheme.colorScheme.onSurface,
+//                                        modifier = Modifier.fillMaxWidth()
+//                                    )
+//                                    Text(
+//                                        text = lesson.teacher,
+//                                        color = MaterialTheme.colorScheme.onSurface
+//                                    )
+//                                    Row(
+//                                        modifier = Modifier.fillMaxWidth(),
+//                                        horizontalArrangement = Arrangement.SpaceBetween
+//                                    ) {
+//                                        Text(
+//                                            text = "${"START"}:00 - ${"END"}:00",
+//                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+//                                        )
+//                                        Text(
+//                                            text = lesson.place,
+//                                            fontWeight = FontWeight.Bold,
+//                                            color = MaterialTheme.colorScheme.onSurface
+//                                        )
+//                                    }
+//                                }
+//                            }
+//                        }
                     }
                 }
-                if (schedule.isNotEmpty() && (schedule[0].subjectId == "ERR" || schedule[0].subjectId == "TIMEOUT")) {
-                    item {
-                        IconButton(
-                            onClick = { if (!loading.value) update.intValue += 1 },
-                            modifier = Modifier
-                                .background(
-                                    color = if (!loading.value) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary,
-                                    shape = MaterialTheme.shapes.large
-                                )
-                                .size(50.dp)
-                        ) {
-                            Icon(
-                                painter = painterResource(R.drawable.refresh),
-                                contentDescription = stringResource(R.string.refresh_button)
-                            )
-                        }
-                    }
-                }
+//                if (schedule.isNotEmpty() && (schedule[0].subjectId == "ERR" || schedule[0].subjectId == "TIMEOUT")) {
+//                    item {
+//                        IconButton(
+//                            onClick = { if (!loading.value) update.intValue += 1 },
+//                            modifier = Modifier
+//                                .background(
+//                                    color = if (!loading.value) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary,
+//                                    shape = MaterialTheme.shapes.large
+//                                )
+//                                .size(50.dp)
+//                        ) {
+//                            Icon(
+//                                painter = painterResource(R.drawable.refresh),
+//                                contentDescription = stringResource(R.string.refresh_button)
+//                            )
+//                        }
+//                    }
+//                }
                 item {
                     Spacer(modifier = Modifier.height(5.dp))
                 }
