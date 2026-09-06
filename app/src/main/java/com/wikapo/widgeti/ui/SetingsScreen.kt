@@ -24,11 +24,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.wikapo.widgeti.R
 import com.wikapo.widgeti.data.Lesson
+import com.wikapo.widgeti.parseSchedule
 import com.wikapo.widgeti.ui.theme.WidgETITheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.jsoup.Jsoup
-import java.time.LocalTime
 
 
 @Composable
@@ -37,7 +36,7 @@ fun SettingsScreen(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
-    var parsedResult by remember { mutableStateOf("") }
+    var parsedResult by remember { mutableStateOf<List<Lesson>?>(null) }
     val filePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri: Uri? ->
@@ -46,47 +45,11 @@ fun SettingsScreen(
                 try {
                     val htmlContent = readTextFromUri(context, uri)
 
-                    if (htmlContent != null) {
-                        val document = Jsoup.parse(htmlContent)
+                    parsedResult = parseSchedule(htmlContent)
 
-                        val rows = document.body().getElementsByTag("tr")
-
-                        val schedule: MutableList<Lesson> = mutableListOf()
-                        rows.forEach { row ->
-                            Log.i("TEST", "Read a row")
-                            val cells = row.getElementsByTag("td")
-                            cells.next()
-
-                            var time: LocalTime = LocalTime.MIN
-                            cells.forEachIndexed { index, cell ->
-                                if (index == 0) {
-                                    time = LocalTime.parse(cell.text())
-                                    return@forEachIndexed
-                                }
-                                if (cell.text() != "") { // TODO Obsługa kilku wydarzeń w danym polu
-                                    val place = cell.getElementsByClass("room_name").text()
-                                    val name = cell.getElementsByClass("subject_name").text()
-                                    val teacher = cell.ownText()
-                                    val boldedText = cell.getElementsByTag("b").eachText() // TODO Odczyt opcjonalnych grup, dat rozpoczęcia i zakończenia
-                                    val kind: Char = boldedText[1][1]
-                                    schedule.add(Lesson(
-                                        name = name,
-                                        kind = kind,
-                                        teacher = teacher,
-                                        place = place,
-                                        weekDay = index - 1,
-                                        startTime = time,
-                                        endTime = time.plusHours(1),
-                                    ))
-                                }
-                            }
-                            Log.d("READ SCHEDULE", schedule.toString())
-                        }
-
-                        parsedResult = schedule.toString()
-                    }
                 } catch (e: Exception) {
-                    parsedResult = "ERROR"
+                    Log.e("parseSchedule", e.toString())
+                    parsedResult = null
                 }
             }
         }
@@ -105,7 +68,7 @@ fun SettingsScreen(
             Text(text = stringResource(R.string.import_schedule_button))
         }
         Spacer(modifier = Modifier.height(8.dp))
-        Text(text = parsedResult)
+        Text(text = parsedResult.toString())
     }
 }
 
