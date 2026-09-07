@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wikapo.widgeti.data.Lesson
 import com.wikapo.widgeti.R
+import com.wikapo.widgeti.data.AppDatabase
 import com.wikapo.widgeti.ui.theme.WidgETITheme
 import kotlinx.coroutines.time.delay
 import java.time.Duration
@@ -47,6 +48,7 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun ScheduleScreen(
     startingDate: LocalDate?,
+    db: AppDatabase?,
     doFetchSchedule: Boolean = true,
 ) {
     val schedule = remember { mutableStateListOf<Lesson>() }
@@ -56,22 +58,21 @@ fun ScheduleScreen(
     else
         remember { mutableStateOf(LocalDate.now()) }
     val update = remember { mutableIntStateOf(0) }
-//    val scheduleInstance = ScheduleRequester()
-//    if (!doFetchSchedule)
-//        schedule.addAll(scheduleInstance.getExampleSchedule(10))
+    val lessonDao = db?.lessonDao()
 
-//    LaunchedEffect(date.value, update.intValue) {
-//        Log.d("UPDATE val", update.intValue.toString())
-//        loading.value = true
-//        schedule.clear()
+    LaunchedEffect(date.value, update.intValue) {
+        Log.d("UPDATE val", update.intValue.toString())
+        loading.value = true
+        schedule.clear()
+        lessonDao?.getAll()?.let { schedule.addAll(it) }
 //        if (doFetchSchedule) {
 //            schedule.addAll(scheduleInstance.fetchSchedule(date.value))
 //            delay(Duration.ofMillis(200))
 //            loading.value = false
 //        }
-//        loading.value = false
-//        Log.d("CHECK UPDATE", schedule.toString())
-//    }
+        loading.value = false
+        Log.d("CHECK UPDATE", schedule.toString())
+    }
 
     Column(
         modifier = Modifier
@@ -129,6 +130,7 @@ fun ScheduleScreen(
                             .padding(bottom = 6.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
+                        Text(lesson.name)
 //                        when (lesson.subjectId) {
 //                            "ERR" -> Text(
 //                                text = lesson.name,
@@ -236,6 +238,6 @@ fun ScheduleScreen(
 @Composable
 fun ScheduleScreenPreview() {
     WidgETITheme {
-        ScheduleScreen(LocalDate.now(), doFetchSchedule = false)
+        ScheduleScreen(LocalDate.now(), db = null, doFetchSchedule = false)
     }
 }

@@ -10,12 +10,12 @@ import java.time.format.DateTimeFormatter
 
 private val dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
 
-fun parseSchedule(htmlContent: String?): List<Lesson>? {
-    if (htmlContent.isNullOrBlank()) return null
+fun parseSchedule(htmlContent: String?): Set<Lesson> {
+    if (htmlContent.isNullOrBlank()) return emptySet()
     val document = Jsoup.parse(htmlContent)
     val rows = document.body().getElementsByTag("tr")
 
-    val schedule: MutableList<Lesson> = mutableListOf()
+    val schedule: MutableSet<Lesson> = mutableSetOf()
     rows.forEach { row ->
         val cells = row.getElementsByTag("td")
         cells.next()
@@ -36,7 +36,7 @@ fun parseSchedule(htmlContent: String?): List<Lesson>? {
                             it.contains("""\[\w]""".toRegex()) -> rawLessons[lessonIndex]["kind"] =
                                 it[1]
 
-                            it.contains("""(\d{1,2}\.){2}\d{2,4}""".toRegex()) || it == "zajęcia wprowadzające dnia" -> {
+                            it.contains("""^(\d{1,2}\.){2}\d{2,4}$""".toRegex()) || it == "zajęcia wprowadzające dnia" -> {
                                 val date = parseDate(it.removePrefix("zajęcia wprowadzające dnia "))
                                 rawLessons[lessonIndex]["endDate"] = date
                                 rawLessons[lessonIndex]["beginDate"] = date
@@ -107,8 +107,26 @@ fun parseSchedule(htmlContent: String?): List<Lesson>? {
             }
         }
     }
-
+    mergeLessons(schedule).also { schedule.clear(); schedule.addAll(it) }
     return schedule
+}
+
+private fun mergeLessons(lessons: Set<Lesson>): Set<Lesson> {
+    val mergedLessons = mutableSetOf<Lesson>()
+
+    val sortedLessons =
+        lessons.sortedWith(compareBy({ it.weekDay }, { it.startTime }, { it.place }))
+    sortedLessons.forEach { lesson ->
+        val previousLesson = mergedLessons.find { it.isMergeableWith(lesson) }
+        if (previousLesson != null) {
+            mergedLessons.remove(previousLesson)
+            mergedLessons.add(previousLesson.copy(endTime = lesson.endTime))
+        } else {
+            mergedLessons.add(lesson)
+        }
+    }
+
+    return mergedLessons
 }
 
 private fun parseDate(dateString: String): LocalDate? {

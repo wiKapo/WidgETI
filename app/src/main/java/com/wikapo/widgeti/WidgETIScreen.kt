@@ -30,6 +30,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.wikapo.widgeti.data.AppDatabase
 import com.wikapo.widgeti.ui.ScheduleScreen
 import com.wikapo.widgeti.ui.SettingsScreen
 import com.wikapo.widgeti.ui.theme.WidgETITheme
@@ -75,6 +76,8 @@ fun WidgETIApp(
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentScreen =
         WidgETIScreen.valueOf(backStackEntry?.destination?.route ?: WidgETIScreen.Start.name)
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val db = AppDatabase.getDatabase(context)
 
     Scaffold(
         topBar = {
@@ -103,10 +106,10 @@ fun WidgETIApp(
             modifier = Modifier.padding(paddingValues)
         ) {
             composable(route = WidgETIScreen.Start.name) {
-                ScheduleScreen(startingDate = startingDate)
+                ScheduleScreen(startingDate = startingDate, db = db)
             }
             composable(route = WidgETIScreen.Settings.name) {
-                SettingsScreen()
+                SettingsScreen(db = db)
             }
         }
     }
