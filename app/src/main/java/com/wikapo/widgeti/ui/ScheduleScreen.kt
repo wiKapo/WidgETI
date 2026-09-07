@@ -1,6 +1,5 @@
 package com.wikapo.widgeti.ui
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,10 +10,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -23,6 +21,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -36,12 +35,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.wikapo.widgeti.data.Lesson
 import com.wikapo.widgeti.R
 import com.wikapo.widgeti.data.AppDatabase
+import com.wikapo.widgeti.data.Lesson
+import com.wikapo.widgeti.getExampleSchedule
 import com.wikapo.widgeti.ui.theme.WidgETITheme
-import kotlinx.coroutines.time.delay
-import java.time.Duration
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -49,10 +47,9 @@ import java.time.format.DateTimeFormatter
 fun ScheduleScreen(
     startingDate: LocalDate?,
     db: AppDatabase?,
-    doFetchSchedule: Boolean = true,
+    previewMode: Boolean = false
 ) {
     val schedule = remember { mutableStateListOf<Lesson>() }
-    val loading = remember { mutableStateOf(false) }
     val date = if (startingDate != null)
         remember { mutableStateOf(startingDate) }
     else
@@ -60,66 +57,23 @@ fun ScheduleScreen(
     val update = remember { mutableIntStateOf(0) }
     val lessonDao = db?.lessonDao()
 
+    if (previewMode) schedule.addAll(getExampleSchedule(15))
+
     LaunchedEffect(date.value, update.intValue) {
-        Log.d("UPDATE val", update.intValue.toString())
-        loading.value = true
         schedule.clear()
         lessonDao?.getAll()?.let { schedule.addAll(it) }
-//        if (doFetchSchedule) {
-//            schedule.addAll(scheduleInstance.fetchSchedule(date.value))
-//            delay(Duration.ofMillis(200))
-//            loading.value = false
-//        }
-        loading.value = false
-        Log.d("CHECK UPDATE", schedule.toString())
     }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .padding(0.dp)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(
-                onClick = { if (!loading.value) date.value = date.value.minusDays(1) },
-                colors = IconButtonDefaults.filledIconButtonColors(),
-                modifier = Modifier.width(100.dp)
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.arrow_back),
-                    contentDescription = stringResource(R.string.previous_button)
-                )
-            }
-            TextButton(
-                onClick = { if (!loading.value) date.value = LocalDate.now() },
-            ) {
-                Text(
-                    text = date.value.format(DateTimeFormatter.ofPattern("dd.MM.yyyy, EEE")),
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontSize = 15.sp
-                )
-            }
-            IconButton(
-                onClick = { if (!loading.value) date.value = date.value.plusDays(1) },
-                colors = IconButtonDefaults.filledIconButtonColors(),
-                modifier = Modifier.width(100.dp)
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.arrow_forward),
-                    contentDescription = stringResource(R.string.next_button)
-                )
-            }
-        }
         if (schedule.isNotEmpty())
             LazyColumn(
                 modifier = Modifier
-                    .padding(horizontal = 10.dp)
-                    .fillMaxSize(),
+                    .weight(1f)
+                    .padding(horizontal = 10.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 items(schedule.size) { index ->
@@ -130,107 +84,118 @@ fun ScheduleScreen(
                             .padding(bottom = 6.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(lesson.name)
-//                        when (lesson.subjectId) {
-//                            "ERR" -> Text(
-//                                text = lesson.name,
-//                                color = MaterialTheme.colorScheme.onError,
-//                                modifier = Modifier
-//                                    .background(MaterialTheme.colorScheme.error)
-//                                    .fillMaxWidth()
-//                                    .padding(7.5.dp)
-//                            )
-//
-//                            "TIMEOUT" -> {
-//                                Text(
-//                                    text = lesson.name,
-//                                    color = MaterialTheme.colorScheme.onErrorContainer,
-//                                    modifier = Modifier
-//                                        .background(MaterialTheme.colorScheme.errorContainer)
-//                                        .fillMaxWidth()
-//                                        .padding(7.5.dp)
-//                                )
-//                            }
-//
-//                            else -> Box(
-//                                modifier = Modifier
-//                                    .background(
-//                                        color = if (index % 2 == 1) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.tertiaryContainer,
-//                                        shape = MaterialTheme.shapes.large
-//                                    )
-//                            ) {
-//                                Column(modifier = Modifier.padding(10.dp, 5.dp)) {
-//                                    Text(
-//                                        text = "[${lesson.kind}]\t\t${lesson.name}",
-//                                        fontWeight = FontWeight.Bold,
-//                                        color = MaterialTheme.colorScheme.onSurface,
-//                                        modifier = Modifier.fillMaxWidth()
-//                                    )
-//                                    Text(
-//                                        text = lesson.teacher,
-//                                        color = MaterialTheme.colorScheme.onSurface
-//                                    )
-//                                    Row(
-//                                        modifier = Modifier.fillMaxWidth(),
-//                                        horizontalArrangement = Arrangement.SpaceBetween
-//                                    ) {
-//                                        Text(
-//                                            text = "${"START"}:00 - ${"END"}:00",
-//                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-//                                        )
-//                                        Text(
-//                                            text = lesson.place,
-//                                            fontWeight = FontWeight.Bold,
-//                                            color = MaterialTheme.colorScheme.onSurface
-//                                        )
-//                                    }
-//                                }
-//                            }
-//                        }
+                        Box(
+                            modifier = Modifier
+                                .background(
+                                    color = if (index % 2 == 1) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.tertiaryContainer,
+                                    shape = MaterialTheme.shapes.large
+                                )
+                        ) {
+                            Column(modifier = Modifier.padding(10.dp, 5.dp)) {
+                                Text(
+                                    text = "[${lesson.kind}]\t\t${lesson.name}",
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                                Text(
+                                    text = lesson.teacher,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        text = "${"START"}:00 - ${"END"}:00",
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    Text(
+                                        text = lesson.place,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
-//                if (schedule.isNotEmpty() && (schedule[0].subjectId == "ERR" || schedule[0].subjectId == "TIMEOUT")) {
-//                    item {
-//                        IconButton(
-//                            onClick = { if (!loading.value) update.intValue += 1 },
-//                            modifier = Modifier
-//                                .background(
-//                                    color = if (!loading.value) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary,
-//                                    shape = MaterialTheme.shapes.large
-//                                )
-//                                .size(50.dp)
-//                        ) {
-//                            Icon(
-//                                painter = painterResource(R.drawable.refresh),
-//                                contentDescription = stringResource(R.string.refresh_button)
-//                            )
-//                        }
-//                    }
-//                }
                 item {
                     Spacer(modifier = Modifier.height(5.dp))
                 }
             }
         else
             Column(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                if (loading.value)
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(50.dp),
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                else
-                    Text(
-                        text = stringResource(R.string.no_classes),
-                        textAlign = TextAlign.Center,
-                        color = MaterialTheme.colorScheme.onSurface
-
-                    )
+                Text(
+                    text = stringResource(R.string.no_classes),
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = stringResource(R.string.no_classes_desc),
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
+        ScheduleNavigationBar(date)
+    }
+}
 
+@Composable
+private fun ScheduleNavigationBar(date: MutableState<LocalDate>) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .requiredHeight(60.dp)
+            .background(MaterialTheme.colorScheme.primaryContainer),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        IconButton(
+            onClick = { date.value = date.value.minusDays(1) },
+            colors = IconButtonDefaults.filledIconButtonColors(),
+            modifier = Modifier
+                .width(100.dp)
+                .requiredHeight(50.dp)
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.arrow_back),
+                contentDescription = stringResource(R.string.previous_button)
+            )
+        }
+        TextButton(
+            onClick = { date.value = LocalDate.now() },
+            modifier = Modifier.width(110.dp)
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = date.value.format(DateTimeFormatter.ofPattern("EEEE\ndd.MM")),
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontSize = 15.sp
+                )
+            }
+        }
+        IconButton(
+            onClick = { date.value = date.value.plusDays(1) },
+            colors = IconButtonDefaults.filledIconButtonColors(),
+            modifier = Modifier
+                .width(100.dp)
+                .requiredHeight(50.dp)
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.arrow_forward),
+                contentDescription = stringResource(R.string.next_button)
+            )
+        }
     }
 }
 
@@ -238,6 +203,22 @@ fun ScheduleScreen(
 @Composable
 fun ScheduleScreenPreview() {
     WidgETITheme {
-        ScheduleScreen(LocalDate.now(), db = null, doFetchSchedule = false)
+        ScheduleScreen(LocalDate.now(), db = null, previewMode = true)
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun EmptyScheduleScreenPreview() {
+    WidgETITheme {
+        ScheduleScreen(LocalDate.now(), db = null)
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun SchduleNavigationPreview() {
+    WidgETITheme {
+        ScheduleNavigationBar(date = remember { mutableStateOf(LocalDate.now()) })
     }
 }

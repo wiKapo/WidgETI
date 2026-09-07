@@ -13,4 +13,5 @@
     <string name="import_schedule_button">Import schedule from .html file</string>
     <string name="manage_schedule">Manage schedule</string>
     <string name="manage_calendar">Manage calendar</string>
+    <string name="no_classes_desc">Add schedule in settings</string>
 </resources>

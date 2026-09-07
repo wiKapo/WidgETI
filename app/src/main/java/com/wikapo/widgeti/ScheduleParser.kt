@@ -127,3 +127,28 @@ private fun parseDate(dateString: String): LocalDate? {
         null
     }
 }
+
+fun getExampleSchedule(amount: Int): Set<Lesson> {
+    Log.d("Example", "Loading example schedule")
+    val schedule: MutableSet<Lesson> = mutableSetOf()
+    val formatter = DateTimeFormatter.ofPattern("H:mm")
+    for (i in 0..amount) {
+        schedule.add(
+            Lesson(
+                name = "Lekcja $i",
+                place = "Sala ${i + 100}",
+                teacher = "Aaaa Bbbb",
+                kind = 'X',
+                weekDay = 0,
+                startTime = LocalTime.parse("${(7 + 2 * i) % 24}:00", formatter),
+                endTime = LocalTime.parse("${(9 + 2 * i) % 24}:00", formatter),
+                group = null,
+                beginDate = null,
+                endDate = null,
+                periodicity = 1,
+                extra = null
+            )
+        )
+    }
+    return schedule
+}

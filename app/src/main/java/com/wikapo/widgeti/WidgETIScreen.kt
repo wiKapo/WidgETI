@@ -3,14 +3,13 @@ package com.wikapo.widgeti
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -18,8 +17,8 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -48,11 +47,18 @@ enum class WidgETIScreen(@StringRes val title: Int) {
 fun WidgETIAppBar(
     currentScreen: WidgETIScreen,
     canNavigateBack: Boolean,
+    navigateToSettings: () -> Unit,
     navigateUp: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     TopAppBar(
-        title = { Text(stringResource(currentScreen.title)) },
+        title = {
+            Text(
+                stringResource(currentScreen.title),
+                fontWeight = FontWeight(400),
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        },
         colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
         modifier = modifier,
         navigationIcon = {
@@ -64,6 +70,18 @@ fun WidgETIAppBar(
                     )
                 }
             }
+        },
+        actions = {
+            if (currentScreen.name == WidgETIScreen.Start.name)
+                IconButton(
+                    onClick = { navigateToSettings() },
+                    colors = IconButtonDefaults.iconButtonColors(containerColor = Color.Transparent),
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.settings),
+                        contentDescription = stringResource(R.string.settings)
+                    )
+                }
         }
     )
 }
@@ -84,19 +102,9 @@ fun WidgETIApp(
             WidgETIAppBar(
                 currentScreen = currentScreen,
                 canNavigateBack = navController.previousBackStackEntry != null,
-                navigateUp = { navController.navigateUp() }
+                navigateUp = { navController.navigateUp() },
+                navigateToSettings = { navController.navigate(WidgETIScreen.Settings.name) }
             )
-        },
-        floatingActionButton = {
-            if (currentScreen.name != WidgETIScreen.Settings.name)
-                FloatingActionButton(
-                    onClick = { navController.navigate(WidgETIScreen.Settings.name) },
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.settings),
-                        contentDescription = stringResource(R.string.settings)
-                    )
-                }
         },
         bottomBar = { WidgETIFooter() }
     ) { paddingValues ->
@@ -118,29 +126,36 @@ fun WidgETIApp(
 @Composable
 fun WidgETIFooter() {
     Row(
+        horizontalArrangement = Arrangement.Center,
         modifier = Modifier
+            .background(color = MaterialTheme.colorScheme.primaryContainer)
+            .fillMaxWidth()
             .padding(bottom = 20.dp)
-            .background(color = MaterialTheme.colorScheme.outlineVariant)
-            .fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Row {
-                Text(
-                    text = stringResource(R.string.footer) + " ",
-                    fontWeight = FontWeight(400),
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-                Text(
-                    text = stringResource(R.string.author),
-                    fontWeight = FontWeight(800),
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-            }
-        }
+        Text(
+            text = stringResource(R.string.footer) + " ",
+            fontWeight = FontWeight(400),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text(
+            text = stringResource(R.string.author),
+            fontWeight = FontWeight(800),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 
+@Preview(showBackground = true)
+@Composable
+fun WidgETIAppBarPreview() {
+    WidgETITheme {
+        WidgETIAppBar(
+            currentScreen = WidgETIScreen.Start,
+            canNavigateBack = false,
+            navigateUp = {},
+            navigateToSettings = {})
+    }
+}
 
 @Preview(showBackground = true)
 @Composable
