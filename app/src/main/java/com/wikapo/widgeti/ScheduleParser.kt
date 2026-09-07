@@ -3,7 +3,6 @@ package com.wikapo.widgeti
 import android.util.Log
 import com.wikapo.widgeti.data.Lesson
 import org.jsoup.Jsoup
-import org.jsoup.nodes.Element
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -16,21 +15,26 @@ fun parseSchedule(htmlContent: String?): Set<Lesson> {
     val rows = document.body().getElementsByTag("tr")
 
     val schedule: MutableSet<Lesson> = mutableSetOf()
-    rows.forEach { row ->
+    rows.drop(1).forEach { row ->
         val cells = row.getElementsByTag("td")
-        cells.next()
 
-        var time: LocalTime = LocalTime.MIN
-        cells.forEachIndexed { index, cell ->
-            if (index == 0) {
-                time = LocalTime.parse(cell.text())
-                return@forEachIndexed
-            }
+        val time: LocalTime = LocalTime.parse(cells.first()?.text())
+        cells.drop(1).forEachIndexed { index, cell ->
             var lessonIndex = 0
             val rawLessons: MutableList<MutableMap<String, Any?>> = mutableListOf(mutableMapOf())
+            //TODO change to base on <br>. Think about it
 
-            fun parseBoldedElements(boldedElements: List<Element>) {
-                boldedElements.forEach { element ->
+            if (cell.text().isNotBlank()) {
+                cell.getElementsByClass("subject_name").eachText().forEachIndexed { index, name ->
+                    if (index == rawLessons.size) rawLessons.add(mutableMapOf())
+                    rawLessons[index]["name"] = name
+                }
+                cell.wholeOwnText().split("\n").filter { it.isNotBlank() }
+                    .forEachIndexed { index, teacher ->
+                        rawLessons[index]["teacher"] = teacher
+                    }
+
+                cell.getElementsByTag("b").forEach { element ->
                     element.text().split(";").map { it.trim() }.forEach {
                         when {
                             it.contains("""\[\w]""".toRegex()) -> rawLessons[lessonIndex]["kind"] =
@@ -63,6 +67,7 @@ fun parseSchedule(htmlContent: String?): Set<Lesson> {
                                 rawLessons[lessonIndex]["extra"].toString() + it //TODO Handle specific dates set
 
                             it.contains("""^(.+\d+)$|^.*AUD.*$""".toRegex()) -> {
+                                // Start populating new lesson if place was found again
                                 if (rawLessons[lessonIndex]["place"] != null) lessonIndex++
                                 rawLessons[lessonIndex]["place"] = it
                             }
@@ -72,19 +77,6 @@ fun parseSchedule(htmlContent: String?): Set<Lesson> {
                         }
                     }
                 }
-            }
-
-            if (cell.text() != "") {
-                cell.getElementsByClass("subject_name").eachText().forEachIndexed { index, name ->
-                    if (index == rawLessons.size) rawLessons.add(mutableMapOf())
-                    rawLessons[index]["name"] = name
-                }
-                cell.wholeOwnText().split("\n").filter { it.isNotBlank() }
-                    .forEachIndexed { index, teacher ->
-                        rawLessons[index]["teacher"] = teacher
-                    }
-
-                parseBoldedElements(cell.getElementsByTag("b"))
 
                 rawLessons.forEach { rawLesson ->
                     val lesson = Lesson(
@@ -92,7 +84,7 @@ fun parseSchedule(htmlContent: String?): Set<Lesson> {
                         kind = rawLesson["kind"] as Char,
                         teacher = rawLesson["teacher"] as String,
                         place = rawLesson["place"] as String,
-                        weekDay = index - 1,
+                        weekDay = index,
                         startTime = time,
                         endTime = time.plusHours(1),
                         group = rawLesson["group"] as Char?,
@@ -112,17 +104,16 @@ fun parseSchedule(htmlContent: String?): Set<Lesson> {
 }
 
 private fun mergeLessons(lessons: Set<Lesson>): Set<Lesson> {
-    val mergedLessons = mutableSetOf<Lesson>()
-
     val sortedLessons =
         lessons.sortedWith(compareBy({ it.weekDay }, { it.startTime }, { it.place }))
-    sortedLessons.forEach { lesson ->
-        val previousLesson = mergedLessons.find { it.isMergeableWith(lesson) }
-        if (previousLesson != null) {
-            mergedLessons.remove(previousLesson)
-            mergedLessons.add(previousLesson.copy(endTime = lesson.endTime))
+
+    val mergedLessons: MutableSet<Lesson> = mutableSetOf(sortedLessons.first())
+    sortedLessons.drop(1).windowed(2, 1).forEach { (a, b) ->
+        if (a.isMergeableWith(b)) {
+            mergedLessons.remove(a)
+            mergedLessons.add(a.copy(endTime = b.endTime))
         } else {
-            mergedLessons.add(lesson)
+            mergedLessons.add(b)
         }
     }
 
