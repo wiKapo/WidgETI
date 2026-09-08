@@ -2,7 +2,6 @@ package com.wikapo.widgeti.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -41,6 +41,7 @@ import com.wikapo.widgeti.data.Lesson
 import com.wikapo.widgeti.getExampleSchedule
 import com.wikapo.widgeti.ui.theme.WidgETITheme
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 @Composable
@@ -50,10 +51,8 @@ fun ScheduleScreen(
     previewMode: Boolean = false
 ) {
     val schedule = remember { mutableStateListOf<Lesson>() }
-    val date = if (startingDate != null)
-        remember { mutableStateOf(startingDate) }
-    else
-        remember { mutableStateOf(LocalDate.now()) }
+    val date = if (startingDate != null) remember { mutableStateOf(startingDate) }
+    else remember { mutableStateOf(LocalDate.now()) }
     val update = remember { mutableIntStateOf(0) }
     val lessonDao = db?.lessonDao()
 
@@ -61,7 +60,7 @@ fun ScheduleScreen(
 
     LaunchedEffect(date.value, update.intValue) {
         schedule.clear()
-        lessonDao?.getAll()?.let { schedule.addAll(it) }
+        lessonDao?.getByWeekDay(date.value.dayOfWeek.value - 1)?.let { schedule.addAll(it) }
     }
 
     Column(
@@ -69,62 +68,27 @@ fun ScheduleScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        if (schedule.isNotEmpty())
+        if (schedule.isNotEmpty()) {
             LazyColumn(
                 modifier = Modifier
                     .weight(1f)
                     .padding(horizontal = 10.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                items(schedule.size) { index ->
-                    val lesson = schedule[index]
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 6.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .background(
-                                    color = if (index % 2 == 1) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.tertiaryContainer,
-                                    shape = MaterialTheme.shapes.large
-                                )
-                        ) {
-                            Column(modifier = Modifier.padding(10.dp, 5.dp)) {
-                                Text(
-                                    text = "[${lesson.kind}]\t\t${lesson.name}",
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                    modifier = Modifier.fillMaxWidth()
-                                )
-                                Text(
-                                    text = lesson.teacher,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Text(
-                                        text = "${"START"}:00 - ${"END"}:00",
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                    Text(
-                                        text = lesson.place,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                }
-                            }
-                        }
-                    }
+                var lastEndTime: LocalTime? = null
+                itemsIndexed(schedule) { index, lesson ->
+                    if (lastEndTime != null && lastEndTime!! < lesson.startTime) BreakItem(
+                        lastEndTime!!, lesson.startTime
+                    )
+                    lastEndTime = lesson.endTime
+
+                    LessonItem(index, lesson)
                 }
                 item {
-                    Spacer(modifier = Modifier.height(5.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
                 }
             }
-        else
+        } else {
             Column(
                 modifier = Modifier
                     .weight(1f)
@@ -143,7 +107,92 @@ fun ScheduleScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
+        }
         ScheduleNavigationBar(date)
+    }
+}
+
+@Composable
+private fun LessonItem(index: Int, lesson: Lesson) {
+    Row(
+        modifier = Modifier
+            .padding(top = 6.dp)
+            .background(
+                color = if (index % 2 == 1) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.tertiaryContainer,
+                shape = MaterialTheme.shapes.large
+            ), verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = lesson.kind.toString(),
+            fontWeight = FontWeight.Bold,
+            fontSize = 32.sp,
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier
+                .padding(vertical = 5.dp)
+                .padding(start = 10.dp)
+                .width(25.dp)
+        )
+        Column(modifier = Modifier.padding(10.dp, 5.dp)) {
+            Text(
+                text = lesson.name,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Text(
+                text = lesson.teacher,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "${lesson.startTime} - ${lesson.endTime}",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = lesson.place,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        }
+    }
+}
+
+/**
+ *   @param startTime break start time
+ *   @param endTime break end time
+ */
+@Composable
+private fun BreakItem(startTime: LocalTime, endTime: LocalTime) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 6.dp)
+            .background(
+                color = MaterialTheme.colorScheme.primaryContainer,
+                shape = MaterialTheme.shapes.large
+            ), horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = startTime.toString(),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(10.dp, 5.dp)
+        )
+        Text(
+            text = stringResource(R.string.break_time),
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(10.dp, 5.dp)
+        )
+        Text(
+            text = endTime.toString(),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(10.dp, 5.dp)
+        )
     }
 }
 
@@ -153,8 +202,9 @@ private fun ScheduleNavigationBar(date: MutableState<LocalDate>) {
         modifier = Modifier
             .fillMaxWidth()
             .requiredHeight(60.dp)
-            .background(MaterialTheme.colorScheme.primaryContainer),
-        horizontalArrangement = Arrangement.SpaceEvenly,
+            .background(MaterialTheme.colorScheme.primaryContainer)
+            .padding(horizontal = 24.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         IconButton(
@@ -162,34 +212,27 @@ private fun ScheduleNavigationBar(date: MutableState<LocalDate>) {
             colors = IconButtonDefaults.filledIconButtonColors(),
             modifier = Modifier
                 .width(100.dp)
-                .requiredHeight(50.dp)
+                .height(50.dp)
         ) {
             Icon(
                 painter = painterResource(R.drawable.arrow_back),
                 contentDescription = stringResource(R.string.previous_button)
             )
         }
-        TextButton(
-            onClick = { date.value = LocalDate.now() },
-            modifier = Modifier.width(110.dp)
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = date.value.format(DateTimeFormatter.ofPattern("EEEE\ndd.MM")),
-                    textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontSize = 15.sp
-                )
-            }
+        TextButton(onClick = { date.value = LocalDate.now() }) {
+            Text(
+                text = date.value.format(DateTimeFormatter.ofPattern("EEEE\ndd.MM")),
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurface,
+                fontSize = 16.sp
+            )
         }
         IconButton(
             onClick = { date.value = date.value.plusDays(1) },
             colors = IconButtonDefaults.filledIconButtonColors(),
             modifier = Modifier
                 .width(100.dp)
-                .requiredHeight(50.dp)
+                .height(50.dp)
         ) {
             Icon(
                 painter = painterResource(R.drawable.arrow_forward),
@@ -203,7 +246,7 @@ private fun ScheduleNavigationBar(date: MutableState<LocalDate>) {
 @Composable
 fun ScheduleScreenPreview() {
     WidgETITheme {
-        ScheduleScreen(LocalDate.now(), db = null, previewMode = true)
+        ScheduleScreen(startingDate = null, db = null, previewMode = true)
     }
 }
 
@@ -211,7 +254,7 @@ fun ScheduleScreenPreview() {
 @Composable
 fun EmptyScheduleScreenPreview() {
     WidgETITheme {
-        ScheduleScreen(LocalDate.now(), db = null)
+        ScheduleScreen(startingDate = null, db = null)
     }
 }
 

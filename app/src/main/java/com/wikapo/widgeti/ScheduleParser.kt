@@ -140,7 +140,7 @@ fun getExampleSchedule(amount: Int): Set<Lesson> {
                 teacher = "Aaaa Bbbb",
                 kind = 'X',
                 weekDay = 0,
-                startTime = LocalTime.parse("${(7 + 2 * i) % 24}:00", formatter),
+                startTime = LocalTime.parse("${(7 + 2 * i + (i % 4 / 3)) % 24}:00", formatter),
                 endTime = LocalTime.parse("${(9 + 2 * i) % 24}:00", formatter),
                 group = null,
                 beginDate = null,

@@ -14,4 +14,5 @@
     <string name="manage_schedule">Zarządzaj harmonogramem</string>
     <string name="manage_calendar">Zarządzaj kalendarzem</string>
     <string name="no_classes_desc">Dodaj harmonogram w ustawieniach</string>
+    <string name="break_time">Przerwa</string>
 </resources>
