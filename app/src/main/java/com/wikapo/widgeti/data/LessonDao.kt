@@ -10,6 +10,12 @@ interface LessonDao {
     @Query("SELECT * FROM lesson")
     suspend fun getAll(): List<Lesson>
 
+    @Query("SELECT * FROM lesson WHERE week_day = :weekDay")
+    suspend fun getByWeekDay(weekDay: Int): List<Lesson>
+
+    @Query("SELECT DISTINCT `group` FROM lesson")
+    suspend fun getGroups(): List<Char>
+
     @Insert
     suspend fun insertAll(vararg lessons: Lesson)
 

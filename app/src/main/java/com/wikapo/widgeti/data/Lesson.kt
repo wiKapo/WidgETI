@@ -21,15 +21,11 @@ data class Lesson(
     @ColumnInfo(name = "extra") val extra: String?, //Unparsed data
 ) {
     fun isMergeableWith(other: Lesson): Boolean {
-        val test =
-            (this.name == other.name && this.kind == other.kind && this.teacher == other.teacher
-                    && this.place == other.place && this.weekDay == other.weekDay
-                    && this.group == other.group && this.beginDate == other.beginDate
-                    && this.endDate == other.endDate && this.periodicity == other.periodicity
-                    // other is right after this lesson and otherwise is the same
-                    && this.endTime == other.startTime)
-        if (test)
-            return true
-        return false
+        return this.name == other.name && this.kind == other.kind && this.teacher == other.teacher
+                && this.place == other.place && this.weekDay == other.weekDay
+                && this.group == other.group && this.beginDate == other.beginDate
+                && this.endDate == other.endDate && this.periodicity == other.periodicity
+                // other is right after this lesson and otherwise is the same
+                && this.endTime == other.startTime
     }
 }
