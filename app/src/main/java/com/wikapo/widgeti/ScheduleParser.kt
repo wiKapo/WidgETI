@@ -104,20 +104,30 @@ fun parseSchedule(htmlContent: String?): Set<Lesson> {
 }
 
 private fun mergeLessons(lessons: Set<Lesson>): Set<Lesson> {
-    val sortedLessons =
-        lessons.sortedWith(compareBy({ it.weekDay }, { it.startTime }, { it.place }))
+    val groupedLessons = lessons.groupBy { it.weekDay }
+    val result = mutableSetOf<Lesson>()
 
-    val mergedLessons: MutableSet<Lesson> = mutableSetOf(sortedLessons.first())
-    sortedLessons.drop(1).windowed(2, 1).forEach { (a, b) ->
-        if (a.isMergeableWith(b)) {
-            mergedLessons.remove(a)
-            mergedLessons.add(a.copy(endTime = b.endTime))
-        } else {
-            mergedLessons.add(b)
+    groupedLessons.mapValues { (_, lessons) ->
+        val sortedLessons =
+            lessons.sortedWith(compareBy({ it.weekDay }, { it.startTime }, { it.place }))
+        val mergedLessons = mutableListOf<Lesson>()
+
+        sortedLessons.forEach { lesson ->
+            val prevLesson = mergedLessons.find {
+                it.isMergeableWith(lesson)
+            }
+
+            if (prevLesson != null) {
+                mergedLessons.remove(prevLesson)
+                mergedLessons.add(prevLesson.copy(endTime = lesson.endTime))
+            } else {
+                mergedLessons.add(lesson)
+            }
         }
+        result.addAll(mergedLessons)
     }
 
-    return mergedLessons
+    return result
 }
 
 private fun parseDate(dateString: String): LocalDate? {
