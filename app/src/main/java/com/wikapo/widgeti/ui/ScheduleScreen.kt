@@ -36,10 +36,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wikapo.widgeti.R
+import com.wikapo.widgeti.LocalSettings
 import com.wikapo.widgeti.data.AppDatabase
 import com.wikapo.widgeti.data.Lesson
+import com.wikapo.widgeti.data.Settings
 import com.wikapo.widgeti.getExampleSchedule
 import com.wikapo.widgeti.ui.theme.WidgETITheme
+import com.wikapo.widgeti.util.nextDay
+import com.wikapo.widgeti.util.previousDay
+import com.wikapo.widgeti.util.today
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -50,9 +55,10 @@ fun ScheduleScreen(
     db: AppDatabase?,
     previewMode: Boolean = false
 ) {
+    val settings = if (previewMode) Settings(true) else LocalSettings.current
     val schedule = remember { mutableStateListOf<Lesson>() }
     val date = if (startingDate != null) remember { mutableStateOf(startingDate) }
-    else remember { mutableStateOf(LocalDate.now()) }
+    else remember { mutableStateOf(today(settings.showWeekends)) }
     val update = remember { mutableIntStateOf(0) }
     val lessonDao = db?.lessonDao()
 
@@ -77,7 +83,7 @@ fun ScheduleScreen(
             ) {
                 var lastEndTime: LocalTime? = null
                 itemsIndexed(schedule) { index, lesson ->
-                    if (lastEndTime != null && lastEndTime!! < lesson.startTime) BreakItem(
+                    if (lastEndTime != null && settings.showBreaks && lastEndTime!! < lesson.startTime) BreakItem(
                         lastEndTime!!, lesson.startTime
                     )
                     lastEndTime = lesson.endTime
@@ -101,11 +107,12 @@ fun ScheduleScreen(
                     textAlign = TextAlign.Center,
                     color = MaterialTheme.colorScheme.onSurface
                 )
-                Text(
-                    text = stringResource(R.string.no_classes_desc),
-                    textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                if (settings.scheduleName == null)
+                    Text(
+                        text = stringResource(R.string.no_classes_desc),
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
             }
         }
         ScheduleNavigationBar(date)
@@ -198,6 +205,8 @@ private fun BreakItem(startTime: LocalTime, endTime: LocalTime) {
 
 @Composable
 private fun ScheduleNavigationBar(date: MutableState<LocalDate>) {
+    val settings = LocalSettings.current
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -208,7 +217,7 @@ private fun ScheduleNavigationBar(date: MutableState<LocalDate>) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         IconButton(
-            onClick = { date.value = date.value.minusDays(1) },
+            onClick = { date.value = date.value.previousDay(settings.showWeekends) },
             colors = IconButtonDefaults.filledIconButtonColors(),
             modifier = Modifier
                 .width(100.dp)
@@ -219,7 +228,12 @@ private fun ScheduleNavigationBar(date: MutableState<LocalDate>) {
                 contentDescription = stringResource(R.string.previous_button)
             )
         }
-        TextButton(onClick = { date.value = LocalDate.now() }) {
+        TextButton(
+            onClick = { date.value = today(settings.showWeekends) },
+            modifier = Modifier
+                .weight(1f)
+                .padding(horizontal = 12.5.dp)
+        ) {
             Text(
                 text = date.value.format(DateTimeFormatter.ofPattern("EEEE\ndd.MM")),
                 textAlign = TextAlign.Center,
@@ -228,7 +242,7 @@ private fun ScheduleNavigationBar(date: MutableState<LocalDate>) {
             )
         }
         IconButton(
-            onClick = { date.value = date.value.plusDays(1) },
+            onClick = { date.value = date.value.nextDay(settings.showWeekends) },
             colors = IconButtonDefaults.filledIconButtonColors(),
             modifier = Modifier
                 .width(100.dp)

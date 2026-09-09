@@ -138,6 +138,12 @@ private fun parseDate(dateString: String): LocalDate? {
     }
 }
 
+fun parseGroupName(htmlContent: String?): String? {
+    if (htmlContent.isNullOrBlank()) return null
+    val document = Jsoup.parse(htmlContent)
+    return document.getElementById("groupName")?.text()
+}
+
 fun getExampleSchedule(amount: Int): Set<Lesson> {
     Log.d("Example", "Loading example schedule")
     val schedule: MutableSet<Lesson> = mutableSetOf()

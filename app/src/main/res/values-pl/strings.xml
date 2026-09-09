@@ -15,4 +15,7 @@
     <string name="manage_calendar">Zarządzaj kalendarzem</string>
     <string name="no_classes_desc">Dodaj harmonogram w ustawieniach</string>
     <string name="break_time">Przerwa</string>
+    <string name="show_breaks">Pokaż przerwy</string>
+    <string name="show_weekends">Pokaż weekendy</string>
+    <string name="schedule_for">Harmonogram dla grupy</string>
 </resources>

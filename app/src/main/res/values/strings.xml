@@ -15,4 +15,7 @@
     <string name="manage_calendar">Manage calendar</string>
     <string name="no_classes_desc">Add schedule in settings</string>
     <string name="break_time">Break</string>
+    <string name="show_breaks">Show Breaks</string>
+    <string name="show_weekends">Show Weekends</string>
+    <string name="schedule_for">Schedule for group</string>
 </resources>
