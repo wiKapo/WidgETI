@@ -19,6 +19,7 @@ object PreferencesKeys {
     val SHOW_BREAKS = booleanPreferencesKey("show_breaks")
     val SHOW_WEEKENDS = booleanPreferencesKey("show_weekends")
     val SCHEDULE_NAME = stringPreferencesKey("schedule_name")
+    val SELECTED_GROUP = stringPreferencesKey("selected_group")
 }
 
 class UserPreferencesRepository(
@@ -36,7 +37,8 @@ class UserPreferencesRepository(
             Settings(
                 showBreaks = preferences[PreferencesKeys.SHOW_BREAKS] ?: false,
                 showWeekends = preferences[PreferencesKeys.SHOW_WEEKENDS] ?: false,
-                scheduleName = preferences[PreferencesKeys.SCHEDULE_NAME]
+                scheduleName = preferences[PreferencesKeys.SCHEDULE_NAME],
+                selectedGroup = preferences[PreferencesKeys.SELECTED_GROUP]
             )
         }
 
@@ -52,15 +54,28 @@ class UserPreferencesRepository(
         }
     }
 
-    suspend fun setScheduleName(scheduleName: String?) {
+    suspend fun updateScheduleName(scheduleName: String?) {
+        if (scheduleName == null)
+            dataStore.edit { preferences -> preferences.remove(PreferencesKeys.SCHEDULE_NAME) }
+        else
+            dataStore.edit { preferences ->
+                preferences[PreferencesKeys.SCHEDULE_NAME] = scheduleName
+            }
+    }
+
+    suspend fun clearSchedulePreferences() {
         dataStore.edit { preferences ->
-            preferences[PreferencesKeys.SCHEDULE_NAME] = scheduleName ?: ""
+            preferences.remove(PreferencesKeys.SCHEDULE_NAME)
+            preferences.remove(PreferencesKeys.SELECTED_GROUP)
         }
     }
 
-    suspend fun removeScheduleName() {
-        dataStore.edit { preferences ->
-            preferences.remove(PreferencesKeys.SCHEDULE_NAME)
-        }
+    suspend fun updateSelectedGroup(selectedGroup: Char?) {
+        if (selectedGroup == null)
+            dataStore.edit { preferences -> preferences.remove(PreferencesKeys.SELECTED_GROUP) }
+        else
+            dataStore.edit { preferences ->
+                preferences[PreferencesKeys.SELECTED_GROUP] = selectedGroup.toString()
+            }
     }
 }

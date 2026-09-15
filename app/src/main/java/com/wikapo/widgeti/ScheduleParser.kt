@@ -37,7 +37,7 @@ fun parseSchedule(htmlContent: String?): Set<Lesson> {
                 cell.getElementsByTag("b").forEach { element ->
                     element.text().split(";").map { it.trim() }.forEach {
                         when {
-                            it.contains("""\[\w]""".toRegex()) -> rawLessons[lessonIndex]["kind"] =
+                            it.contains("""\[\w]""".toRegex()) -> rawLessons[lessonIndex]["type"] =
                                 it[1]
 
                             it.contains("""^(\d{1,2}\.){2}\d{2,4}$""".toRegex()) || it == "zajęcia wprowadzające dnia" -> {
@@ -60,7 +60,7 @@ fun parseSchedule(htmlContent: String?): Set<Lesson> {
                                     it == "first half semester" -> rawLessons[lessonIndex]["extra"] =
                                 (rawLessons[lessonIndex]["extra"] ?: "").toString() + it
 
-                            it == "co 2 tygodnie" -> rawLessons[lessonIndex]["periodicity"] = 2
+                            it == "co 2 tygodnie" -> rawLessons[lessonIndex]["frequency"] = 2
 
                             it == "zajęcia w dniach: " -> rawLessons[lessonIndex]["extra"] =
                                 (rawLessons[lessonIndex]["extra"] ?: "").toString() + "HANDLE SPECIFIC DATES" + it //TODO Handle specific dates set
@@ -80,7 +80,7 @@ fun parseSchedule(htmlContent: String?): Set<Lesson> {
                 rawLessons.forEach { rawLesson ->
                     val lesson = Lesson(
                         name = rawLesson["name"] as String,
-                        kind = rawLesson["kind"] as Char,
+                        type = rawLesson["type"] as Char,
                         teacher = rawLesson["teacher"] as String,
                         place = rawLesson["place"] as String,
                         weekDay = index,
@@ -89,7 +89,7 @@ fun parseSchedule(htmlContent: String?): Set<Lesson> {
                         group = rawLesson["group"] as Char?,
                         startDate = rawLesson["startDate"] as LocalDate?,
                         endDate = rawLesson["endDate"] as LocalDate?,
-                        periodicity = if (rawLesson["periodicity"] == null) 1 else rawLesson["periodicity"] as Int,
+                        frequency = if (rawLesson["frequency"] == null) 1 else rawLesson["frequency"] as Int,
                         extra = rawLesson["extra"] as String?
                     )
                     Log.d("READ LESSON", lesson.toString())
@@ -153,14 +153,14 @@ fun getExampleSchedule(amount: Int): Set<Lesson> {
                 name = "Lekcja $i",
                 place = "Sala ${i + 100}",
                 teacher = "Aaaa Bbbb",
-                kind = 'X',
+                type = 'X',
                 weekDay = 0,
                 startTime = LocalTime.parse("${(7 + 2 * i + (i % 4 / 3)) % 24}:00", formatter),
                 endTime = LocalTime.parse("${(9 + 2 * i) % 24}:00", formatter),
                 group = if (i % 3 == 0) 'G' else null,
                 startDate = null,
                 endDate = null,
-                periodicity = if (i % 2 == 1) 2 else 1,
+                frequency = if (i % 2 == 1) 2 else 1,
                 extra = null
             )
         )

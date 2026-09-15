@@ -20,7 +20,9 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -36,9 +38,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.wikapo.widgeti.data.AppDatabase
+import com.wikapo.widgeti.data.Lesson
 import com.wikapo.widgeti.data.Settings
 import com.wikapo.widgeti.data.UserPreferencesRepository
 import com.wikapo.widgeti.data.dataStore
+import com.wikapo.widgeti.ui.EditLessonScreen
+import com.wikapo.widgeti.ui.EditScheduleScreen
 import com.wikapo.widgeti.ui.ScheduleScreen
 import com.wikapo.widgeti.ui.SettingsScreen
 import com.wikapo.widgeti.ui.theme.WidgETITheme
@@ -47,7 +52,8 @@ import java.time.LocalDate
 enum class WidgETIScreen(@StringRes val title: Int) {
     Start(title = R.string.app_name),
     Settings(title = R.string.settings),
-    ManageSchedule(title = R.string.manage_schedule),
+    EditSchedule(title = R.string.edit_schedule),
+    EditLesson(title = R.string.edit_lesson),
     ManageCalendar(title = R.string.manage_calendar),
 }
 
@@ -59,9 +65,9 @@ val LocalUserPreferencesRepository = staticCompositionLocalOf<UserPreferencesRep
 fun WidgETIAppBar(
     currentScreen: WidgETIScreen,
     canNavigateBack: Boolean,
-    navigateToSettings: () -> Unit,
-    navigateUp: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    navigateToSettings: () -> Unit = {},
+    navigateUp: () -> Unit = {}
 ) {
     TopAppBar(
         title = {
@@ -109,8 +115,11 @@ fun WidgETIApp(
     val context = LocalContext.current
     val db = AppDatabase.getDatabase(context)
 
-    val userPreferencesRepository = remember(context) { UserPreferencesRepository(context.dataStore) }
+    val userPreferencesRepository =
+        remember(context) { UserPreferencesRepository(context.dataStore) }
     val settings by userPreferencesRepository.userSettingsFlow.collectAsState(initial = Settings())
+
+    var selectedLesson by remember { mutableStateOf<Lesson?>(null) }
 
     Scaffold(
         topBar = {
@@ -133,10 +142,30 @@ fun WidgETIApp(
                 modifier = Modifier.padding(paddingValues)
             ) {
                 composable(route = WidgETIScreen.Start.name) {
-                    ScheduleScreen(startingDate = startingDate, db = db)
+                    ScheduleScreen(
+                        startingDate = startingDate,
+                        db = db,
+                        onAddScheduleClicked = { navController.navigate(WidgETIScreen.Settings.name) },
+                        onEditLessonClicked = { lesson ->
+                            selectedLesson = lesson
+                            navController.navigate(WidgETIScreen.EditLesson.name)
+                        })
                 }
                 composable(route = WidgETIScreen.Settings.name) {
-                    SettingsScreen(db = db)
+                    SettingsScreen(db = db, onEditScheduleClicked = {
+                        navController.navigate(WidgETIScreen.EditSchedule.name)
+                    })
+                }
+                composable(route = WidgETIScreen.EditSchedule.name) {
+                    EditScheduleScreen(db = db, onLessonClicked = { lesson ->
+                        selectedLesson = lesson
+                        navController.navigate(WidgETIScreen.EditLesson.name)
+                    })
+                }
+                composable(route = WidgETIScreen.EditLesson.name) {
+                    selectedLesson?.let { lesson ->
+                        EditLessonScreen(db = db, lesson = lesson)
+                    }
                 }
             }
         }
@@ -171,9 +200,8 @@ fun WidgETIAppBarPreview() {
     WidgETITheme {
         WidgETIAppBar(
             currentScreen = WidgETIScreen.Start,
-            canNavigateBack = false,
-            navigateUp = {},
-            navigateToSettings = {})
+            canNavigateBack = false
+        )
     }
 }
 

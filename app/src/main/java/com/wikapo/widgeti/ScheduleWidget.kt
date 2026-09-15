@@ -21,14 +21,10 @@ import androidx.glance.GlanceTheme
 import androidx.glance.Image
 import androidx.glance.ImageProvider
 import androidx.glance.LocalSize
-import androidx.glance.action.ActionParameters
-import androidx.glance.action.actionParametersOf
-import androidx.glance.action.actionStartActivity
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.CircularProgressIndicator
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
-import androidx.glance.appwidget.LinearProgressIndicator
 import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.lazy.LazyColumn
@@ -46,7 +42,6 @@ import androidx.glance.layout.padding
 import androidx.glance.layout.size
 import androidx.glance.preview.ExperimentalGlancePreviewApi
 import androidx.glance.preview.Preview
-import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
@@ -94,7 +89,7 @@ class ScheduleWidget : GlanceAppWidget() {
 //TODO Przytrzymując widgeta pojawai się FAB do ustawień widgeta
 
 @Composable
-fun ScheduleContent(previewMode: Boolean = false) {
+fun ScheduleContent(preview: Boolean = false) {
     val schedule = remember { mutableStateListOf<Lesson>() }
     val loading = remember { mutableStateOf(false) }
     val date = remember { mutableStateOf(LocalDate.now()) }
@@ -104,14 +99,14 @@ fun ScheduleContent(previewMode: Boolean = false) {
     val size = LocalSize.current
     val currentTime = LocalTime.now()
 //
-//    if (previewMode)
+//    if (preview)
 //        schedule.addAll(scheduleInstance.getExampleSchedule(10))
 
     LaunchedEffect(date.value, update.intValue) {
         Log.d("UPDATE val", update.intValue.toString())
         loading.value = true
         schedule.clear()
-        if (!previewMode) {
+        if (!preview) {
 //            schedule.addAll(scheduleInstance.fetchSchedule(date.value))
             delay(Duration.ofMillis(200))
             loading.value = false
@@ -232,9 +227,9 @@ fun ScheduleContent(previewMode: Boolean = false) {
 //                                            GlanceTheme.colors.onSurfaceVariant
 //                                    Text(
 //                                        text = "DATE" + date.value + " NOW" + LocalDate.now(),
-////                                        text = if (size.width > 175.dp) "[${lesson.kind}]\t\t${lesson.name}"
+////                                        text = if (size.width > 175.dp) "[${lesson.type}]\t\t${lesson.name}"
 ////                                        else {
-////                                            var result = "[${lesson.kind}]\t\t"
+////                                            var result = "[${lesson.type}]\t\t"
 ////                                            lesson.name.split(" ")
 ////                                                .forEach { s -> result += s[0].uppercase() }
 ////                                            result
@@ -262,7 +257,7 @@ fun ScheduleContent(previewMode: Boolean = false) {
 //                                        )
 //                                    }
 //                                }
-//                                if (!previewMode && date.value == LocalDate.now() //&&
+//                                if (!preview && date.value == LocalDate.now() //&&
 ////                                    currentTime.hour >= lesson.startHour && currentTime.hour < lesson.endHour
 //                                ) {
 //                                    LinearProgressIndicator(
