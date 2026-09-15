@@ -1,17 +1,28 @@
 package com.wikapo.widgeti
 
 import androidx.annotation.StringRes
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -27,11 +38,11 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -121,6 +132,14 @@ fun WidgETIApp(
 
     var selectedLesson by remember { mutableStateOf<Lesson?>(null) }
 
+    val density = LocalDensity.current
+    val isImeVisible = WindowInsets.ime.getBottom(density) > 0
+    val contentWindowInsets = if (isImeVisible) {
+        WindowInsets.systemBars.exclude(WindowInsets.navigationBars)
+    } else {
+        ScaffoldDefaults.contentWindowInsets
+    }
+
     Scaffold(
         topBar = {
             WidgETIAppBar(
@@ -130,7 +149,16 @@ fun WidgETIApp(
                 navigateToSettings = { navController.navigate(WidgETIScreen.Settings.name) }
             )
         },
-        bottomBar = { WidgETIFooter() }
+        bottomBar = {
+            AnimatedVisibility(
+                visible = !isImeVisible,
+                enter = fadeIn() + slideInVertically(initialOffsetY = { it }),
+                exit = ExitTransition.None
+            ) {
+                WidgETIFooter()
+            }
+        },
+        contentWindowInsets = contentWindowInsets
     ) { paddingValues ->
         CompositionLocalProvider(
             LocalSettings provides settings,
@@ -179,7 +207,7 @@ fun WidgETIFooter() {
         modifier = Modifier
             .background(color = MaterialTheme.colorScheme.primaryContainer)
             .fillMaxWidth()
-            .padding(bottom = 20.dp)
+            .windowInsetsPadding(WindowInsets.navigationBars)
     ) {
         Text(
             text = stringResource(R.string.footer) + " ",
