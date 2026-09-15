@@ -43,28 +43,27 @@ fun parseSchedule(htmlContent: String?): Set<Lesson> {
                             it.contains("""^(\d{1,2}\.){2}\d{2,4}$""".toRegex()) || it == "zajęcia wprowadzające dnia" -> {
                                 val date = parseDate(it.removePrefix("zajęcia wprowadzające dnia "))
                                 rawLessons[lessonIndex]["endDate"] = date
-                                rawLessons[lessonIndex]["beginDate"] = date
+                                rawLessons[lessonIndex]["startDate"] = date
                             }
 
                             it.startsWith("gr.") -> rawLessons[lessonIndex]["group"] =
                                 it.removePrefix("gr.").first().uppercaseChar()
 
-                            it.startsWith("od") -> rawLessons[lessonIndex]["beginDate"] =
+                            it.startsWith("od") -> rawLessons[lessonIndex]["startDate"] =
                                 parseDate(it.removePrefix("od "))
 
                             it.startsWith("do") -> rawLessons[lessonIndex]["endDate"] =
                                 parseDate(it.removePrefix("do "))
 
-                            it == "remote classes" || it == "przedmiot obieralny" || it == "zajęcia nieregularne" -> rawLessons[lessonIndex]["extra"] =
-                                rawLessons[lessonIndex]["extra"].toString() + it
-
-                            it == "first half semester" -> rawLessons[lessonIndex]["extra"] =
-                                rawLessons[lessonIndex]["extra"].toString() + "PICK END DATE" + it //TODO let user pick end date
+                            it == "remote classes" || it == "przedmiot obieralny" ||
+                                    it == "zajęcia nieregularne" ||
+                                    it == "first half semester" -> rawLessons[lessonIndex]["extra"] =
+                                (rawLessons[lessonIndex]["extra"] ?: "").toString() + it
 
                             it == "co 2 tygodnie" -> rawLessons[lessonIndex]["periodicity"] = 2
 
                             it == "zajęcia w dniach: " -> rawLessons[lessonIndex]["extra"] =
-                                rawLessons[lessonIndex]["extra"].toString() + it //TODO Handle specific dates set
+                                (rawLessons[lessonIndex]["extra"] ?: "").toString() + "HANDLE SPECIFIC DATES" + it //TODO Handle specific dates set
 
                             it.contains("""^(.+\d+)$|^.*AUD.*$""".toRegex()) -> {
                                 // Start populating new lesson if place was found again
@@ -73,7 +72,7 @@ fun parseSchedule(htmlContent: String?): Set<Lesson> {
                             }
 
                             else -> rawLessons[lessonIndex]["extra"] =
-                                rawLessons[lessonIndex]["extra"].toString() + "NOT RECOGNIZED" + it
+                                (rawLessons[lessonIndex]["extra"] ?: "").toString() + "NOT RECOGNIZED" + it
                         }
                     }
                 }
@@ -88,7 +87,7 @@ fun parseSchedule(htmlContent: String?): Set<Lesson> {
                         startTime = time,
                         endTime = time.plusHours(1),
                         group = rawLesson["group"] as Char?,
-                        beginDate = rawLesson["beginDate"] as LocalDate?,
+                        startDate = rawLesson["startDate"] as LocalDate?,
                         endDate = rawLesson["endDate"] as LocalDate?,
                         periodicity = if (rawLesson["periodicity"] == null) 1 else rawLesson["periodicity"] as Int,
                         extra = rawLesson["extra"] as String?
@@ -158,10 +157,10 @@ fun getExampleSchedule(amount: Int): Set<Lesson> {
                 weekDay = 0,
                 startTime = LocalTime.parse("${(7 + 2 * i + (i % 4 / 3)) % 24}:00", formatter),
                 endTime = LocalTime.parse("${(9 + 2 * i) % 24}:00", formatter),
-                group = null,
-                beginDate = null,
+                group = if (i % 3 == 0) 'G' else null,
+                startDate = null,
                 endDate = null,
-                periodicity = 1,
+                periodicity = if (i % 2 == 1) 2 else 1,
                 extra = null
             )
         )
