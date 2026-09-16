@@ -31,7 +31,7 @@
     <string name="no">No</string>
     <string name="info_icon">Info icon</string>
     <string name="remove_schedule_desc">"Are you sure you want to remove schedule "</string>
-    <string name="group">Group %1$c</string>
+    <string name="group_x">Group %1$c</string>
     <string name="confirm">Confirm</string>
     <string name="cancel">Cancel</string>
     <string name="clear">Clear</string>
@@ -59,4 +59,18 @@
     <string name="edit">Edit</string>
     <string name="set_end_date">Set the end date</string>
     <string name="lesson_end_first_half_semester">This lesson ends in the first half semester. Please set the end date manually.</string>
+    <string name="name">Name</string>
+    <string name="type">Type</string>
+    <string name="teacher">Teacher</string>
+    <string name="place">Place</string>
+    <string name="week_day">Day of the week</string>
+    <string name="start_time">Start time</string>
+    <string name="end_time">End time</string>
+    <string name="start_date">Start date</string>
+    <string name="end_date">End date</string>
+    <string name="group">Group</string>
+    <string name="frequency">Frequency</string>
+    <string name="save">Save</string>
+    <string name="delete">Delete</string>
+    <string name="ok">OK</string>
 </resources>

@@ -152,7 +152,7 @@ fun SettingsScreen(
             LabelWithContent(
                 text = stringResource(R.string.select_group),
                 description = if (settings.selectedGroup != null)
-                    stringResource(R.string.group, settings.selectedGroup[0]) else null,
+                    stringResource(R.string.group_x, settings.selectedGroup[0]) else null,
                 onClick = { openSelectGroupDialog = !openSelectGroupDialog })
             LabelWithContent(
                 text = stringResource(R.string.set_day_changes),
@@ -213,7 +213,7 @@ fun SettingsScreen(
                 dialogTitle = stringResource(R.string.select_group),
                 defaultValue = settings.selectedGroup?.get(0),
                 options = availableGroups,
-                optionLabelResource = R.string.group
+                optionLabelResource = R.string.group_x
             )
         }
 

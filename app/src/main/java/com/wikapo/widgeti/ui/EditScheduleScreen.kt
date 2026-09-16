@@ -182,7 +182,7 @@ private fun EditableLessonItem(index: Int, lesson: Lesson, onClick: () -> Unit) 
                     maxLines = 1
                 )
                 if (lesson.group != null) Text(
-                    text = stringResource(R.string.group, lesson.group),
+                    text = stringResource(R.string.group_x, lesson.group),
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1
                 )

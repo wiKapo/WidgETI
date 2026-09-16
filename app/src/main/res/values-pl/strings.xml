@@ -31,7 +31,7 @@
     <string name="no">Nie</string>
     <string name="info_icon">Ikona informacji</string>
     <string name="remove_schedule_desc">"Czy na pewno chcesz usunąć harmonogram "</string>
-    <string name="group">Grupa %1$c</string>
+    <string name="group_x">Grupa %1$c</string>
     <string name="confirm">Potwierdź</string>
     <string name="cancel">Anuluj</string>
     <string name="clear">Wyczyść</string>
@@ -60,5 +60,19 @@
     <string name="edit">Edytuj</string>
     <string name="set_end_date">Ustaw datę zakończenia</string>
     <string name="lesson_end_first_half_semester">Ta lekcja kończy się w pierwszej połowie semestru. Proszę ręcznie ustawić datę zakończenia.</string>
+    <string name="name">Nazwa</string>
+    <string name="type">Typ</string>
+    <string name="teacher">Prowadzący</string>
+    <string name="place">Miejsce</string>
+    <string name="week_day">Dzień tygodnia</string>
+    <string name="end_time">Czas zakończenia</string>
+    <string name="start_date">Data rozpoczęcia</string>
+    <string name="end_date">Data zakończenia</string>
+    <string name="group">Grupa</string>
+    <string name="frequency">Częstotliwość</string>
+    <string name="start_time">Czas rozpoczęcia</string>
+    <string name="save">Zapisz</string>
+    <string name="delete">Usuń</string>
+    <string name="ok">OK</string>
 
 </resources>

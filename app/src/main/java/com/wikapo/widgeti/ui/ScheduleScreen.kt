@@ -199,7 +199,7 @@ private fun LessonItem(index: Int, lesson: Lesson) {
                     text = lesson.teacher, color = MaterialTheme.colorScheme.onSurface, maxLines = 1
                 )
                 if (lesson.group != null) Text(
-                    text = stringResource(R.string.group, lesson.group),
+                    text = stringResource(R.string.group_x, lesson.group),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1
                 )
