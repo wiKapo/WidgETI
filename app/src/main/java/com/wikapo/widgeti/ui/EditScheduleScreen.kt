@@ -44,6 +44,8 @@ import com.wikapo.widgeti.getExampleSchedule
 
 private const val SHOW_EXTRA = true //TODO Change to false after testing
 
+//TODO Fix wyświetlanie wydarzeń w trybie nocnym
+
 @Composable
 fun EditScheduleScreen(
     db: AppDatabase?,

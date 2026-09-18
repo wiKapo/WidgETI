@@ -61,6 +61,8 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
+//TODO Fix wyświetlanie wydarzeń w trybie nocnym
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScheduleScreen(
