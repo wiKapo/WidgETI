@@ -74,5 +74,9 @@
     <string name="save">Zapisz</string>
     <string name="delete">Usuń</string>
     <string name="ok">OK</string>
+    <string name="select_start_date">Wybierz datę rozpoczęcia</string>
+    <string name="select_end_date">Wybierz datę zakończenia</string>
+    <string name="select_start_time">Wybierz czas rozpoczęcia</string>
+    <string name="select_end_time">Wybierz czas zakończenia</string>
 
 </resources>
