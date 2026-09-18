@@ -2,11 +2,14 @@ package com.wikapo.widgeti.data
 
 import androidx.room3.ColumnInfo
 import androidx.room3.Entity
+import androidx.room3.PrimaryKey
 import java.time.LocalDate
 import java.time.LocalTime
 
-@Entity(primaryKeys = ["name", "teacher", "place", "week_day", "start_time"])
+@Entity
 data class Lesson(
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "id") val id: Int? = null,
     @ColumnInfo(name = "name") val name: String,
     @ColumnInfo(name = "type") val type: Char,
     @ColumnInfo(name = "teacher") val teacher: String,
