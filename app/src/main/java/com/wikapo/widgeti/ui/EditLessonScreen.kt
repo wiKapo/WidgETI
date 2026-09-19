@@ -4,18 +4,21 @@ import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.scrollBy
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
@@ -24,9 +27,11 @@ import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults.indicatorLine
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TimePickerState
 import androidx.compose.material3.rememberDatePickerState
@@ -40,6 +45,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -49,9 +56,14 @@ import com.wikapo.widgeti.R
 import com.wikapo.widgeti.data.AppDatabase
 import com.wikapo.widgeti.data.Lesson
 import com.wikapo.widgeti.ui.theme.WidgETITheme
+import com.wikapo.widgeti.util.flatEnd
+import com.wikapo.widgeti.util.flatStart
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
+
+private val verticalSpacing = 6.dp
+private val horizontalSpacing = 4.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -67,6 +79,11 @@ fun EditLessonScreen(
     var openEndDatePickerDialog by remember { mutableStateOf(false) }
     var localLesson by remember { mutableStateOf(lesson) }
 
+    val bodySmall = MaterialTheme.typography.bodySmall
+    val bodyLarge = MaterialTheme.typography.bodyLarge
+    val shapeLarge = MaterialTheme.shapes.large
+
+    val interactionSource = remember { MutableInteractionSource() }
     val scrollState = rememberScrollState()
     val coroutineScope = rememberCoroutineScope()
     val keyboardHeight = WindowInsets.ime.getBottom(LocalDensity.current)
@@ -80,100 +97,210 @@ fun EditLessonScreen(
         modifier = Modifier
             .fillMaxSize()
             .imePadding()
-            .padding(top = 6.dp)
+            .padding(12.dp)
             .verticalScroll(scrollState),
         horizontalAlignment = Alignment.CenterHorizontally,
-
-        ) {
+    ) {
         TextField(
-            state = rememberTextFieldState(initialText = localLesson.name),
+            modifier = Modifier.fillMaxWidth(),
+            shape = shapeLarge,
+            singleLine = true,
+            value = localLesson.name,
+            onValueChange = { localLesson = localLesson.copy(name = it) },
             label = { Text(text = stringResource(R.string.name)) },
         )
-        Row {
+        Spacer(modifier = Modifier.height(verticalSpacing))
+        Row(modifier = Modifier.fillMaxWidth()) {
             TextField(
-                modifier = Modifier.width(100.dp),
-                state = rememberTextFieldState(initialText = localLesson.type.toString()),
+                modifier = Modifier.weight(.5f),
+                shape = shapeLarge.flatEnd(),
+                singleLine = true,
+                value = localLesson.type.toString(),
+                onValueChange = { localLesson = localLesson.copy(type = it.first()) },
                 label = { Text(text = stringResource(R.string.type)) },
             )
+            Spacer(modifier = Modifier.width(horizontalSpacing))
             TextField(
-                modifier = Modifier.width(100.dp),
-                state = rememberTextFieldState(initialText = localLesson.group.toString()),
+                modifier = Modifier.weight(.5f),
+                shape = RectangleShape,
+                singleLine = true,
+                value = (localLesson.group ?: "").toString(),
+                onValueChange = { localLesson = localLesson.copy(group = it.firstOrNull()) },
                 label = { Text(text = stringResource(R.string.group)) })
+            Spacer(modifier = Modifier.width(horizontalSpacing))
             TextField(
-                modifier = Modifier.width(100.dp),
-                state = rememberTextFieldState(initialText = localLesson.frequency.toString()), //TODO Only numbers
+                modifier = Modifier.weight(1f),
+                shape = shapeLarge.flatStart(),
+                singleLine = true,
+                value = localLesson.frequency.toString(),
+                onValueChange = { localLesson = localLesson.copy(frequency = it.toInt()) }, //TODO Only numbers
                 label = { Text(text = stringResource(R.string.frequency)) },
             )
         }
+        Spacer(modifier = Modifier.height(verticalSpacing))
         TextField(
-            state = rememberTextFieldState(initialText = localLesson.teacher),
+            modifier = Modifier.fillMaxWidth(),
+            shape = shapeLarge,
+            singleLine = true,
+            value = localLesson.teacher,
+            onValueChange = { localLesson = localLesson.copy(teacher = it) },
             label = { Text(text = stringResource(R.string.teacher)) },
         )
+        Spacer(modifier = Modifier.height(verticalSpacing))
         TextField(
-            state = rememberTextFieldState(initialText = localLesson.place),
+            modifier = Modifier.fillMaxWidth(),
+            shape = shapeLarge,
+            singleLine = true,
+            value = localLesson.place,
+            onValueChange = { localLesson = localLesson.copy(place = it) },
             label = { Text(text = stringResource(R.string.place)) },
         )
+        Spacer(modifier = Modifier.height(verticalSpacing))
         TextField(
-            state = rememberTextFieldState(initialText = localLesson.weekDay.toString()),
+            modifier = Modifier.fillMaxWidth(),
+            shape = shapeLarge,
+            singleLine = true,
+            value = localLesson.weekDay.toString(),
+            onValueChange = { localLesson = localLesson.copy(weekDay = it.toInt()) },
             label = { Text(text = stringResource(R.string.week_day)) },
         )
-        Row {
+        Spacer(modifier = Modifier.height(verticalSpacing))
+        Row(modifier = Modifier.fillMaxWidth()) {
             Column(
                 modifier = Modifier
+                    .clip(shapeLarge.flatEnd())
+                    .indicatorLine(
+                        enabled = true,
+                        isError = false,
+                        interactionSource = interactionSource
+                    )
+                    .background(
+                        LocalTextSelectionColors.current.backgroundColor.copy(alpha = 0.15f)
+                    )
                     .clickable { openStartTimePickerDialog = true }
-                    .size(150.dp, 60.dp)
+                    .height(60.dp)
+                    .weight(1f)
                     .padding(horizontal = 16.5.dp, vertical = 5.dp)
             ) {
-                Text(text = stringResource(R.string.start_time))
+                Text(
+                    text = stringResource(R.string.start_time),
+                    fontSize = bodySmall.fontSize,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
                 Text(text = localLesson.startTime.toString())
             }
+            Spacer(modifier = Modifier.width(horizontalSpacing))
             Column(
                 modifier = Modifier
+                    .clip(shapeLarge.flatStart())
+                    .indicatorLine(
+                        enabled = true,
+                        isError = false,
+                        interactionSource = interactionSource
+                    )
+                    .background(
+                        LocalTextSelectionColors.current.backgroundColor.copy(alpha = 0.15f)
+                    )
                     .clickable { openEndTimePickerDialog = true }
-                    .size(150.dp, 60.dp)
+                    .height(60.dp)
+                    .weight(1f)
                     .padding(horizontal = 16.5.dp, vertical = 5.dp)
             ) {
-                Text(text = stringResource(R.string.end_time))
+                Text(
+                    text = stringResource(R.string.end_time),
+                    fontSize = bodySmall.fontSize,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
                 Text(text = localLesson.endTime.toString())
             }
         }
-        Row(
-            modifier = Modifier.background(
-                LocalTextSelectionColors.current.backgroundColor.copy(
-                    alpha = 0.15f
-                )
-            )
-        ) {
+        Spacer(modifier = Modifier.height(verticalSpacing))
+        Row(modifier = Modifier.fillMaxWidth()) {
             Column(
                 modifier = Modifier
+                    .clip(shapeLarge.flatEnd())
+                    .indicatorLine(
+                        enabled = true,
+                        isError = false,
+                        interactionSource = interactionSource
+                    )
+                    .background(
+                        LocalTextSelectionColors.current.backgroundColor.copy(alpha = 0.15f)
+                    )
                     .clickable { openStartDatePickerDialog = true }
-                    .size(150.dp, 60.dp)
-                    .padding(horizontal = 16.5.dp, vertical = 5.dp)
+                    .height(60.dp)
+                    .weight(1f)
+                    .padding(horizontal = 16.5.dp, vertical = 5.dp),
+                verticalArrangement = Arrangement.Center
             ) {
-                Text(text = stringResource(R.string.start_date)) //TODO tekst wyszarzony
-                Text(text = localLesson.startDate.toString())
+                if (localLesson.startDate != null) {
+                    Text(
+                        text = stringResource(R.string.start_date),
+                        fontSize = bodySmall.fontSize,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(text = localLesson.startDate.toString())
+                } else {
+                    Text(
+                        text = stringResource(R.string.start_date),
+                        fontSize = bodyLarge.fontSize,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
+            Spacer(modifier = Modifier.width(horizontalSpacing))
             Column(
                 modifier = Modifier
+                    .clip(shapeLarge.flatStart())
+                    .indicatorLine(
+                        enabled = true,
+                        isError = false,
+                        interactionSource = interactionSource
+                    )
+                    .background(
+                        LocalTextSelectionColors.current.backgroundColor.copy(alpha = 0.15f)
+                    )
                     .clickable { openEndDatePickerDialog = true }
-                    .size(150.dp, 60.dp)
-                    .padding(horizontal = 16.5.dp, vertical = 5.dp)
+                    .height(60.dp)
+                    .weight(1f)
+                    .padding(horizontal = 16.5.dp, vertical = 5.dp),
+                verticalArrangement = Arrangement.Center
             ) {
-                Text(text = stringResource(R.string.end_date))
-                Text(text = localLesson.endDate.toString())
+                if (localLesson.endDate != null) {
+                    Text(
+                        text = stringResource(R.string.end_date),
+                        fontSize = bodySmall.fontSize,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(text = localLesson.endDate.toString())
+                } else {
+                    Text(
+                        text = stringResource(R.string.end_date),
+                        fontSize = bodyLarge.fontSize,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
         }
-        Row {
+        Spacer(modifier = Modifier.height(verticalSpacing))
+        Row(
+            modifier = Modifier.weight(1f),
+            verticalAlignment = Alignment.Bottom
+        ) {
             Button(onClick = { onCancelClicked() }) {
                 Text(text = stringResource(R.string.cancel))
             }
-            if (localLesson != lesson)
+            Spacer(modifier = Modifier.width(horizontalSpacing))
+            if (localLesson != lesson) {
                 Button(onClick = { localLesson = lesson }) {
                     Text(text = stringResource(R.string.reset))
                 }
+                Spacer(modifier = Modifier.width(horizontalSpacing))
+            }
             Button(onClick = { /*TODO*/ }) {
                 Text(text = stringResource(R.string.delete))
             }
+            Spacer(modifier = Modifier.width(horizontalSpacing))
             Button(onClick = { coroutineScope.launch { lessonDao?.updateLesson(localLesson) } }
             ) {
                 Text(text = stringResource(R.string.save))
