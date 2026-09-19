@@ -4,6 +4,7 @@ import androidx.room3.Dao
 import androidx.room3.Delete
 import androidx.room3.Insert
 import androidx.room3.Query
+import androidx.room3.Update
 import java.time.LocalDate
 
 @Dao
@@ -22,6 +23,9 @@ interface LessonDao {
 
     @Query("SELECT DISTINCT `group` FROM lesson WHERE `group` != ''")
     suspend fun getGroups(): List<Char>
+
+    @Update
+    suspend fun updateLesson(lesson: Lesson)
 
     @Insert
     suspend fun insertAll(vararg lessons: Lesson)

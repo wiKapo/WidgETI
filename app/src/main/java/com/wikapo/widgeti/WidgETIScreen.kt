@@ -192,7 +192,9 @@ fun WidgETIApp(
                 }
                 composable(route = WidgETIScreen.EditLesson.name) {
                     selectedLesson?.let { lesson ->
-                        EditLessonScreen(db = db, lesson = lesson)
+                        EditLessonScreen(db = db, lesson = lesson, onCancelClicked = {
+                            navController.navigateUp()
+                        })
                     }
                 }
             }

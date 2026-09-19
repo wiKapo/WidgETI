@@ -58,13 +58,14 @@ import java.time.LocalTime
 fun EditLessonScreen(
     db: AppDatabase?,
     lesson: Lesson,
-    preview: Boolean = false
+    onCancelClicked: () -> Unit = {}
 ) {
     val lessonDao = db?.lessonDao()
     var openStartTimePickerDialog by remember { mutableStateOf(false) }
     var openEndTimePickerDialog by remember { mutableStateOf(false) }
     var openStartDatePickerDialog by remember { mutableStateOf(false) }
     var openEndDatePickerDialog by remember { mutableStateOf(false) }
+    var localLesson by remember { mutableStateOf(lesson) }
 
     val scrollState = rememberScrollState()
     val coroutineScope = rememberCoroutineScope()
@@ -85,35 +86,35 @@ fun EditLessonScreen(
 
         ) {
         TextField(
-            state = rememberTextFieldState(initialText = lesson.name),
+            state = rememberTextFieldState(initialText = localLesson.name),
             label = { Text(text = stringResource(R.string.name)) },
         )
         Row {
             TextField(
                 modifier = Modifier.width(100.dp),
-                state = rememberTextFieldState(initialText = lesson.type.toString()),
+                state = rememberTextFieldState(initialText = localLesson.type.toString()),
                 label = { Text(text = stringResource(R.string.type)) },
             )
             TextField(
                 modifier = Modifier.width(100.dp),
-                state = rememberTextFieldState(initialText = lesson.group.toString()),
+                state = rememberTextFieldState(initialText = localLesson.group.toString()),
                 label = { Text(text = stringResource(R.string.group)) })
             TextField(
                 modifier = Modifier.width(100.dp),
-                state = rememberTextFieldState(initialText = lesson.frequency.toString()), //TODO Only numbers
+                state = rememberTextFieldState(initialText = localLesson.frequency.toString()), //TODO Only numbers
                 label = { Text(text = stringResource(R.string.frequency)) },
             )
         }
         TextField(
-            state = rememberTextFieldState(initialText = lesson.teacher),
+            state = rememberTextFieldState(initialText = localLesson.teacher),
             label = { Text(text = stringResource(R.string.teacher)) },
         )
         TextField(
-            state = rememberTextFieldState(initialText = lesson.place),
+            state = rememberTextFieldState(initialText = localLesson.place),
             label = { Text(text = stringResource(R.string.place)) },
         )
         TextField(
-            state = rememberTextFieldState(initialText = lesson.weekDay.toString()),
+            state = rememberTextFieldState(initialText = localLesson.weekDay.toString()),
             label = { Text(text = stringResource(R.string.week_day)) },
         )
         Row {
@@ -124,7 +125,7 @@ fun EditLessonScreen(
                     .padding(horizontal = 16.5.dp, vertical = 5.dp)
             ) {
                 Text(text = stringResource(R.string.start_time))
-                Text(text = lesson.startTime.toString())
+                Text(text = localLesson.startTime.toString())
             }
             Column(
                 modifier = Modifier
@@ -133,7 +134,7 @@ fun EditLessonScreen(
                     .padding(horizontal = 16.5.dp, vertical = 5.dp)
             ) {
                 Text(text = stringResource(R.string.end_time))
-                Text(text = lesson.endTime.toString())
+                Text(text = localLesson.endTime.toString())
             }
         }
         Row(
@@ -150,7 +151,7 @@ fun EditLessonScreen(
                     .padding(horizontal = 16.5.dp, vertical = 5.dp)
             ) {
                 Text(text = stringResource(R.string.start_date)) //TODO tekst wyszarzony
-                Text(text = lesson.startDate.toString())
+                Text(text = localLesson.startDate.toString())
             }
             Column(
                 modifier = Modifier
@@ -159,17 +160,22 @@ fun EditLessonScreen(
                     .padding(horizontal = 16.5.dp, vertical = 5.dp)
             ) {
                 Text(text = stringResource(R.string.end_date))
-                Text(text = lesson.endDate.toString())
+                Text(text = localLesson.endDate.toString())
             }
         }
         Row {
-            Button(onClick = { /*TODO*/ }) {
+            Button(onClick = { onCancelClicked() }) {
                 Text(text = stringResource(R.string.cancel))
             }
+            if (localLesson != lesson)
+                Button(onClick = { localLesson = lesson }) {
+                    Text(text = stringResource(R.string.reset))
+                }
             Button(onClick = { /*TODO*/ }) {
                 Text(text = stringResource(R.string.delete))
             }
-            Button(onClick = { /*TODO*/ }) {
+            Button(onClick = { coroutineScope.launch { lessonDao?.updateLesson(localLesson) } }
+            ) {
                 Text(text = stringResource(R.string.save))
             }
         }
@@ -177,27 +183,28 @@ fun EditLessonScreen(
     when {
         openStartTimePickerDialog ->
             TimePickerDialog(
-                time = lesson.startTime,
+                time = localLesson.startTime,
                 title = stringResource(R.string.select_start_time),
                 onDismiss = { openStartTimePickerDialog = false },
                 onConfirm = { state ->
-                    Log.d("TimePicker", "Selected time: ${state.hour}:${state.minute}")
+                    localLesson =
+                        localLesson.copy(startTime = LocalTime.of(state.hour, state.minute))
                     openStartTimePickerDialog = false
                 })
 
         openEndTimePickerDialog ->
             TimePickerDialog(
-                time = lesson.endTime,
+                time = localLesson.endTime,
                 title = stringResource(R.string.select_end_time),
                 onDismiss = { openEndTimePickerDialog = false },
                 onConfirm = { state ->
-                    Log.d("TimePicker", "Selected time: ${state.hour}:${state.minute}")
+                    localLesson = localLesson.copy(endTime = LocalTime.of(state.hour, state.minute))
                     openEndTimePickerDialog = false
                 })
 
         openStartDatePickerDialog ->
             DatePickerDialog(
-                date = lesson.startDate,
+                date = localLesson.startDate,
                 title = stringResource(R.string.select_start_date),
                 onDateSelected = {
                     Log.d("DatePicker", "Selected date: $it")
@@ -207,7 +214,7 @@ fun EditLessonScreen(
 
         openEndDatePickerDialog ->
             DatePickerDialog(
-                date = lesson.endDate,
+                date = localLesson.endDate,
                 title = stringResource(R.string.select_end_date),
                 onDateSelected = {
                     Log.d("DatePicker", "Selected date: $it")

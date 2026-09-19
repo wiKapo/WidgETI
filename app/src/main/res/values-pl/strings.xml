@@ -78,5 +78,6 @@
     <string name="select_end_date">Wybierz datę zakończenia</string>
     <string name="select_start_time">Wybierz czas rozpoczęcia</string>
     <string name="select_end_time">Wybierz czas zakończenia</string>
+    <string name="reset">Resetuj</string>
 
 </resources>
