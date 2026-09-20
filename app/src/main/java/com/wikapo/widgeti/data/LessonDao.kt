@@ -12,12 +12,13 @@ interface LessonDao {
     @Query("SELECT * FROM lesson")
     suspend fun getAll(): List<Lesson>
 
-    @Query("SELECT * FROM lesson WHERE week_day = :weekDay")
+    @Query("SELECT * FROM lesson WHERE week_day = :weekDay ORDER BY start_time")
     suspend fun getByWeekDay(weekDay: Int): List<Lesson>
 
     @Query(
         "SELECT * FROM lesson WHERE week_day = :weekDay AND " +
-                "((start_date IS NULL OR start_date <= :date) AND (end_date IS NULL OR end_date >= :date))"
+                "((start_date IS NULL OR start_date <= :date) AND " +
+                "(end_date IS NULL OR end_date >= :date)) ORDER BY start_time"
     )
     suspend fun getByDay(weekDay: Int, date: LocalDate): List<Lesson>
 
