@@ -78,4 +78,7 @@
     <string name="select_start_time">Select start time</string>
     <string name="select_end_time">Select end time</string>
     <string name="reset">Reset</string>
+    <string name="select_week_day">Select day of the week</string>
+    <string name="required">Required</string>
+    <string name="recommended">Recommended</string>
 </resources>

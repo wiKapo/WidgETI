@@ -1,5 +1,6 @@
 package com.wikapo.widgeti.ui
 
+import android.util.Log
 import androidx.annotation.StringRes
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
@@ -26,6 +27,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
@@ -35,6 +37,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.getSelectedDate
@@ -54,6 +57,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -62,6 +66,7 @@ import androidx.compose.ui.unit.dp
 import com.wikapo.widgeti.R
 import com.wikapo.widgeti.data.AppDatabase
 import com.wikapo.widgeti.data.Lesson
+import com.wikapo.widgeti.data.MutableLesson
 import com.wikapo.widgeti.ui.theme.WidgETITheme
 import com.wikapo.widgeti.util.flatEnd
 import com.wikapo.widgeti.util.flatStart
@@ -77,7 +82,8 @@ enum class ConnectShape {
     None,
     Right,
     Both,
-    Left
+    Left,
+    Dropdown
 }
 
 /**
@@ -106,14 +112,15 @@ fun EditLessonScreen(
     var openStartDatePickerDialog by remember { mutableStateOf(false) }
     var openEndDatePickerDialog by remember { mutableStateOf(false) }
     var openSelectWeekDayDropdown by remember { mutableStateOf(false) }
-    var localLesson by remember { mutableStateOf(lesson) }
+    var localLesson by remember { mutableStateOf(MutableLesson(lesson)) }
 
     val scrollState = rememberScrollState()
     val coroutineScope = rememberCoroutineScope()
     val keyboardHeight = WindowInsets.ime.getBottom(LocalDensity.current)
     LaunchedEffect(key1 = keyboardHeight) {
         coroutineScope.launch {
-            scrollState.scrollBy(keyboardHeight.toFloat())
+            scrollState.scrollTo(0)
+//            scrollState.scrollBy(keyboardHeight.toFloat())
         }
     }
 
@@ -130,63 +137,85 @@ fun EditLessonScreen(
             TextField(
                 value = localLesson.name,
                 labelResource = R.string.name,
-            ) { localLesson = localLesson.copy(name = it) }
+                required = true
+            ) {
+                Log.d("TAG", "EditLessonScreen: $it")
+                localLesson = localLesson.copy(name = it)
+                Log.d("TAG", "EditLessonScreen: ${localLesson.name}")
+            }
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .padding(horizontal = externalPadding)
                     .padding(bottom = verticalSpacing)
                     .height(IntrinsicSize.Min)
             ) {
-                var type: Char? by remember { mutableStateOf(localLesson.type) }
                 TextField(
                     connectShape = ConnectShape.Right,
                     modifier = Modifier.weight(.5f),
-                    value = (type ?: "").toString(),
-                    labelResource = R.string.type
-                ) { input ->
-                    if (input.length < 2) type = input.firstOrNull()
-                    type?.let { localLesson = localLesson.copy(type = it.uppercaseChar()) }
+                    value = localLesson.type?.toString() ?: "",
+                    labelResource = R.string.type,
+                    required = true
+                ) {
+                    if (it.length < 2)
+                        localLesson = localLesson.copy(type = it.firstOrNull()?.uppercaseChar())
                 }
-                VerticalDivider()
+                TextFieldDivider()
                 TextField(
                     connectShape = ConnectShape.Both,
                     modifier = Modifier.weight(.5f),
-                    value = (localLesson.group ?: "").toString(),
+                    value = localLesson.group?.toString() ?: "",
                     labelResource = R.string.group
                 ) {
                     if (it.length < 2) localLesson =
                         localLesson.copy(group = it.firstOrNull()?.uppercaseChar())
                 }
-                VerticalDivider()
+                TextFieldDivider()
                 TextField(
                     connectShape = ConnectShape.Left,
                     modifier = Modifier.weight(1f),
-                    value = localLesson.frequency.toString(),
+                    value = localLesson.frequency?.toString() ?: "",
                     labelResource = R.string.frequency,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-                ) { localLesson = localLesson.copy(frequency = it.toInt()) }
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    required = true
+                ) { localLesson = localLesson.copy(frequency = it.toIntOrNull()) }
             }
             TextField(
                 value = localLesson.teacher,
-                labelResource = R.string.teacher
+                labelResource = R.string.teacher,
+                required = true
             ) { localLesson = localLesson.copy(teacher = it) }
             TextField(
                 value = localLesson.place,
-                labelResource = R.string.place
+                labelResource = R.string.place,
+                required = true
             ) { localLesson = localLesson.copy(place = it) }
             ExposedDropdownMenuBox(
+                modifier = Modifier
+                    .padding(horizontal = externalPadding)
+                    .padding(bottom = verticalSpacing),
                 expanded = openSelectWeekDayDropdown,
                 onExpandedChange = { openSelectWeekDayDropdown = !openSelectWeekDayDropdown }
             ) {
                 TextField(
-                    modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
-                    value = stringResource(WeekDay.entries[localLesson.weekDay].resource),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
+                    value = stringResource(
+                        localLesson.weekDay?.let { WeekDay.entries[it] }?.resource
+                            ?: R.string.select_week_day
+                    ),
+                    connectShape = ConnectShape.Dropdown,
                     labelResource = R.string.week_day,
                     readOnly = true,
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = openSelectWeekDayDropdown) }
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = openSelectWeekDayDropdown) },
+                    required = true
                 )
 
-                ExposedDropdownMenu(
+                DropdownMenu(
+                    modifier = Modifier.exposedDropdownSize(matchAnchorWidth = true),
+                    shape = MaterialTheme.shapes.large,
+                    shadowElevation = 10.dp,
                     expanded = openSelectWeekDayDropdown,
                     onDismissRequest = { openSelectWeekDayDropdown = false }) {
                     WeekDay.entries.forEachIndexed { index, day ->
@@ -195,23 +224,24 @@ fun EditLessonScreen(
                             onClick = {
                                 localLesson = localLesson.copy(weekDay = index)
                                 openSelectWeekDayDropdown = false
-                            },
-                            contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
+                            }
                         )
                     }
                 }
             }
             Row(
                 modifier = Modifier
+                    .padding(horizontal = externalPadding)
                     .fillMaxWidth()
                     .padding(bottom = verticalSpacing)
                     .height(IntrinsicSize.Min)
             ) {
                 TextField(
-                    value = localLesson.startTime.toString(),
+                    value = localLesson.startTime?.toString() ?: "",
                     labelResource = R.string.start_time,
                     readOnly = true,
                     connectShape = ConnectShape.Right,
+                    required = true,
                     modifier = Modifier
                         .weight(1f)
                         .pointerInput(localLesson.startTime) {
@@ -225,12 +255,13 @@ fun EditLessonScreen(
                             }
                         }
                 )
-                VerticalDivider()
+                TextFieldDivider()
                 TextField(
-                    value = localLesson.endTime.toString(),
+                    value = localLesson.endTime?.toString() ?: "",
                     labelResource = R.string.end_time,
                     readOnly = true,
                     connectShape = ConnectShape.Left,
+                    required = true,
                     modifier = Modifier
                         .weight(1f)
                         .pointerInput(localLesson.endTime) {
@@ -248,6 +279,7 @@ fun EditLessonScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .padding(horizontal = externalPadding)
                     .padding(bottom = verticalSpacing)
                     .height(IntrinsicSize.Min)
             ) {
@@ -256,6 +288,7 @@ fun EditLessonScreen(
                     labelResource = R.string.start_date,
                     readOnly = true,
                     connectShape = ConnectShape.Right,
+                    required = localLesson.frequency?.let { it > 1 } ?: false,
                     modifier = Modifier
                         .weight(1f)
                         .pointerInput(localLesson.startDate) {
@@ -269,12 +302,15 @@ fun EditLessonScreen(
                             }
                         }
                 )
-                VerticalDivider()
+                TextFieldDivider()
                 TextField(
                     value = localLesson.endDate?.toString() ?: "",
                     labelResource = R.string.end_date,
                     readOnly = true,
                     connectShape = ConnectShape.Left,
+                    required = localLesson.extra?.contains("first half semester") ?: false,
+                    supportResource = R.string.recommended,
+                    errorColorResource = R.color.warning_color,
                     modifier = Modifier
                         .weight(1f)
                         .pointerInput(localLesson.endDate) {
@@ -293,6 +329,7 @@ fun EditLessonScreen(
         Row(
             modifier = Modifier
                 .padding(bottom = externalPadding)
+                .padding(horizontal = externalPadding)
                 .fillMaxWidth()
                 .height(40.dp),
             verticalAlignment = Alignment.Bottom,
@@ -306,7 +343,7 @@ fun EditLessonScreen(
             }
             if (localLesson != lesson) {
                 Button(
-                    onClick = { localLesson = lesson },
+                    onClick = { localLesson = MutableLesson(lesson) },
                     modifier = Modifier.padding(end = horizontalButtonSpacing)
                 ) {
                     Text(text = stringResource(R.string.reset))
@@ -318,10 +355,11 @@ fun EditLessonScreen(
 //            Spacer(modifier = Modifier.width(horizontalSpacing))
             Button(
                 onClick = {
-                    coroutineScope.launch { lessonDao?.updateLesson(localLesson) }
-                    onCancelClicked() //TODO confirmation of changes to apply in dialog
-                },
-                modifier = Modifier.padding(end = externalPadding)
+                    localLesson.toLesson()?.let { lesson ->
+                        coroutineScope.launch { lessonDao?.updateLesson(lesson) }
+                        onCancelClicked() //TODO confirmation of changes to apply in dialog
+                    }
+                }
             ) {
                 Text(text = stringResource(R.string.save))
             }
@@ -330,7 +368,7 @@ fun EditLessonScreen(
     when {
         openStartTimePickerDialog ->
             TimePickerDialog(
-                time = localLesson.startTime,
+                time = localLesson.startTime ?: LocalTime.MIN,
                 title = stringResource(R.string.select_start_time),
                 onDismiss = { openStartTimePickerDialog = false },
                 onConfirm = { time ->
@@ -340,7 +378,7 @@ fun EditLessonScreen(
 
         openEndTimePickerDialog ->
             TimePickerDialog(
-                time = localLesson.endTime,
+                time = localLesson.endTime ?: LocalTime.MIN,
                 title = stringResource(R.string.select_end_time),
                 onDismiss = { openEndTimePickerDialog = false },
                 onConfirm = { time ->
@@ -371,40 +409,63 @@ fun EditLessonScreen(
 }
 
 @Composable
+private fun TextFieldDivider() {
+    VerticalDivider(modifier = Modifier.height(TextFieldDefaults.MinHeight))
+}
+
+@Composable
 fun TextField(
-    value: String,
+    value: String?,
     labelResource: Int,
     modifier: Modifier = Modifier,
     connectShape: ConnectShape = ConnectShape.None,
     singleLine: Boolean = true,
     readOnly: Boolean = false,
+    required: Boolean = false,
+    supportResource: Int = R.string.required,
+    errorColorResource: Int? = null,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     trailingIcon: @Composable (() -> Unit)? = null,
     onValueChange: (String) -> Unit = {}
 ) {
+    val isEmpty by remember(value) { mutableStateOf(value == null || value == "") }
+    val errorDescription: @Composable (() -> Unit)? = if (isEmpty && required) {
+        { Text(text = stringResource(supportResource)) }
+    } else {
+        null
+    }
+    val errorColor = if (errorColorResource != null) colorResource(errorColorResource) else null
     val shapeLarge = MaterialTheme.shapes.large
     TextField(
         modifier = when (connectShape) {
             ConnectShape.None -> modifier
-                .fillMaxWidth()
                 .padding(horizontal = externalPadding)
                 .padding(bottom = verticalSpacing)
+                .fillMaxWidth()
 
-            ConnectShape.Right -> modifier.padding(start = externalPadding)
-
-            ConnectShape.Both -> modifier
-
-            ConnectShape.Left -> modifier.padding(end = externalPadding)
+            else -> modifier
         },
         shape = when (connectShape) {
-            ConnectShape.None -> shapeLarge
+            ConnectShape.None, ConnectShape.Dropdown -> shapeLarge
             ConnectShape.Right -> shapeLarge.flatEnd()
             ConnectShape.Both -> RectangleShape
             ConnectShape.Left -> shapeLarge.flatStart()
         },
         singleLine = singleLine,
         readOnly = readOnly,
-        value = value,
+        isError = isEmpty && required,
+        supportingText = errorDescription,
+        colors = if (errorColor != null) {
+            TextFieldDefaults.colors().copy(
+                errorTextColor = errorColor,
+                errorLabelColor = errorColor,
+                errorIndicatorColor = errorColor,
+                errorSupportingTextColor = errorColor,
+                errorCursorColor = errorColor,
+                errorTrailingIconColor = errorColor
+            )
+        } else TextFieldDefaults.colors(),
+        value = value ?: "",
         onValueChange = onValueChange,
         keyboardOptions = keyboardOptions,
         trailingIcon = trailingIcon,
@@ -418,7 +479,7 @@ fun TimePickerDialog(
     time: LocalTime,
     title: String,
     onDismiss: () -> Unit,
-    onConfirm: (LocalTime) -> Unit
+    onConfirm: (LocalTime?) -> Unit
 ) {
     val timePickerState =
         rememberTimePickerState(time.hour, time.minute)
@@ -426,8 +487,17 @@ fun TimePickerDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         dismissButton = {
-            TextButton(onClick = { onDismiss() }) {
-                Text(stringResource(R.string.cancel))
+            Row {
+                TextButton(onClick = onDismiss) {
+                    Text(stringResource(R.string.cancel))
+                }
+                TextButton(onClick = {
+                    timePickerState.hour = 0
+                    timePickerState.minute = 0
+                    onConfirm(null)
+                }) {
+                    Text(stringResource(R.string.clear))
+                }
             }
         },
         confirmButton = {
