@@ -65,7 +65,7 @@ fun parseSchedule(htmlContent: String?): Set<Lesson> {
                             it == "zajęcia w dniach: " -> rawLessons[lessonIndex]["extra"] =
                                 (rawLessons[lessonIndex]["extra"] ?: "").toString() + "HANDLE SPECIFIC DATES" + it //TODO Handle specific dates set
 
-                            it.contains("""^(.+\d+)$|^.*AUD.*$""".toRegex()) -> {
+                            it.contains("""^([\w ]+\d+)$|^[\w. ]*AUD[\w. ]*$""".toRegex()) -> { // TODO Obsługa nowych elementów na SISie
                                 // Start populating new lesson if place was found again
                                 if (rawLessons[lessonIndex]["place"] != null) lessonIndex++
                                 rawLessons[lessonIndex]["place"] = it
