@@ -3,11 +3,15 @@
     android:configure="com.wikapo.widgeti.WidgetConfigurationActivity"
     android:description="@string/widgeti_description"
     android:initialLayout="@layout/glance_default_loading_layout"
-    android:minWidth="60dp"
-    android:minHeight="100dp"
+    android:minResizeWidth="60dp"
+    android:minResizeHeight="100dp"
     android:resizeMode="horizontal|vertical"
+    android:targetCellWidth="2"
+    android:targetCellHeight="2"
     android:updatePeriodMillis="1800000"
     android:widgetCategory="home_screen"
     android:widgetFeatures="configuration_optional|reconfigurable">
+
+    <!-- TODO    android:previewLayout="@layout/schedule_widget_preview"-->
 
 </appwidget-provider>

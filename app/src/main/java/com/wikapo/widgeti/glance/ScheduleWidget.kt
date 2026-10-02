@@ -1,4 +1,4 @@
-package com.wikapo.widgeti
+package com.wikapo.widgeti.glance
 
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
@@ -45,6 +45,7 @@ import androidx.glance.preview.Preview
 import androidx.glance.text.Text
 import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
+import com.wikapo.widgeti.R
 import com.wikapo.widgeti.data.Lesson
 import kotlinx.coroutines.time.delay
 import java.time.Duration
