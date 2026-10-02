@@ -17,7 +17,6 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:label="@string/app_name"
             android:theme="@style/Theme.WidgETI"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
@@ -28,7 +27,7 @@
         </activity>
 
         <receiver
-            android:name=".ScheduleWidgetReceiver"
+            android:name=".glance.ScheduleWidgetReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
