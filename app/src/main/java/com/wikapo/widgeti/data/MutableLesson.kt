@@ -6,19 +6,19 @@ import java.time.LocalTime
 
 
 class MutableLesson(
-    val id: Int?,
-    val name: String?,
-    val type: Char?,
-    val teacher: String?,
-    val place: String?,
-    val weekDay: Int?,
-    val startTime: LocalTime?,
-    val endTime: LocalTime?,
-    val group: Char?,
-    val startDate: LocalDate?,
-    val endDate: LocalDate?,
-    val frequency: Int?, //How often is such lesson 1 week, 2 weeks or more
-    val extra: String?, //Unparsed data
+    var id: Int? = null,
+    var name: String? = null,
+    var type: Char? = null,
+    var teacher: String? = null,
+    var place: String? = null,
+    var weekDay: Int? = null,
+    var startTime: LocalTime? = null,
+    var endTime: LocalTime? = null,
+    var group: Char? = null,
+    var startDate: LocalDate? = null,
+    var endDate: LocalDate? = null,
+    var frequency: Int? = 1, //How often is such lesson (1 week, 2 weeks or more)
+    var extra: String? = null, //Unparsed data
 ) {
     constructor(lesson: Lesson) : this(
         id = lesson.id,
@@ -85,7 +85,7 @@ class MutableLesson(
             )
             return lesson
         } catch (e: Exception) {
-            Log.e("Error", e.message.toString())
+            Log.e("Error", "${e.message}\n Caused by: ${e.cause}")
         }
         return null
     }
@@ -98,18 +98,24 @@ class MutableLesson(
 
     override fun hashCode(): Int {
         var result = id ?: 0
-        result = 31 * result + (type?.hashCode() ?: 0)
+        result = 31 * result + type.hashCode()
         result = 31 * result + (weekDay ?: 0)
-        result = 31 * result + (group?.hashCode() ?: 0)
+        result = 31 * result + group.hashCode()
         result = 31 * result + (frequency ?: 0)
-        result = 31 * result + (name?.hashCode() ?: 0)
-        result = 31 * result + (teacher?.hashCode() ?: 0)
-        result = 31 * result + (place?.hashCode() ?: 0)
-        result = 31 * result + (startTime?.hashCode() ?: 0)
-        result = 31 * result + (endTime?.hashCode() ?: 0)
-        result = 31 * result + (startDate?.hashCode() ?: 0)
-        result = 31 * result + (endDate?.hashCode() ?: 0)
-        result = 31 * result + (extra?.hashCode() ?: 0)
+        result = 31 * result + name.hashCode()
+        result = 31 * result + teacher.hashCode()
+        result = 31 * result + place.hashCode()
+        result = 31 * result + startTime.hashCode()
+        result = 31 * result + endTime.hashCode()
+        result = 31 * result + startDate.hashCode()
+        result = 31 * result + endDate.hashCode()
+        result = 31 * result + extra.hashCode()
         return result
+    }
+
+    override fun toString(): String {
+        return "MutableLesson(id=$id, name=$name, type=$type, teacher=$teacher, place=$place, " +
+                "weekDay=$weekDay, startTime=$startTime, endTime=$endTime, group=$group, " +
+                "startDate=$startDate, endDate=$endDate, frequency=$frequency, extra=$extra)"
     }
 }

@@ -1,7 +1,8 @@
-package com.wikapo.widgeti
+package com.wikapo.widgeti.util
 
 import android.util.Log
 import com.wikapo.widgeti.data.Lesson
+import com.wikapo.widgeti.data.MutableLesson
 import org.jsoup.Jsoup
 import java.time.LocalDate
 import java.time.LocalTime
@@ -21,79 +22,75 @@ fun parseSchedule(htmlContent: String?): Set<Lesson> {
         val time: LocalTime = LocalTime.parse(cells.first()?.text())
         cells.drop(1).forEachIndexed { index, cell ->
             var lessonIndex = 0
-            val rawLessons: MutableList<MutableMap<String, Any?>> = mutableListOf(mutableMapOf())
+            val rawLessons: MutableList<MutableLesson> = mutableListOf(MutableLesson())
             //TODO change to base on <br>. Think about it
 
             if (cell.text().isNotBlank()) {
                 cell.getElementsByClass("subject_name").eachText().forEachIndexed { index, name ->
-                    if (index == rawLessons.size) rawLessons.add(mutableMapOf())
-                    rawLessons[index]["name"] = name
+                    if (index == rawLessons.size) rawLessons.add(MutableLesson())
+                    rawLessons[index].name = name
                 }
                 cell.wholeOwnText().split("\n").filter { it.isNotBlank() }
                     .forEachIndexed { index, teacher ->
-                        rawLessons[index]["teacher"] = teacher
+                        rawLessons[index].teacher = teacher
                     }
 
                 cell.getElementsByTag("b").forEach { element ->
                     element.text().split(";").map { it.trim() }.forEach {
                         when {
-                            it.contains("""\[\w]""".toRegex()) -> rawLessons[lessonIndex]["type"] =
+                            it.contains("""\[\w]""".toRegex()) -> rawLessons[lessonIndex].type =
                                 it[1]
 
                             it.contains("""^(\d{1,2}\.){2}\d{2,4}$""".toRegex()) || it == "zajęcia wprowadzające dnia" -> {
                                 val date = parseDate(it.removePrefix("zajęcia wprowadzające dnia "))
-                                rawLessons[lessonIndex]["endDate"] = date
-                                rawLessons[lessonIndex]["startDate"] = date
+                                rawLessons[lessonIndex].endDate = date
+                                rawLessons[lessonIndex].startDate = date
                             }
 
-                            it.startsWith("gr.") -> rawLessons[lessonIndex]["group"] =
+                            it.startsWith("gr.") -> rawLessons[lessonIndex].group =
                                 it.removePrefix("gr.").first().uppercaseChar()
 
-                            it.startsWith("od") -> rawLessons[lessonIndex]["startDate"] =
+                            it.startsWith("od") -> rawLessons[lessonIndex].startDate =
                                 parseDate(it.removePrefix("od "))
 
-                            it.startsWith("do") -> rawLessons[lessonIndex]["endDate"] =
+                            it.startsWith("do") -> rawLessons[lessonIndex].endDate =
                                 parseDate(it.removePrefix("do "))
 
                             it == "remote classes" || it == "przedmiot obieralny" ||
                                     it == "zajęcia nieregularne" ||
-                                    it == "first half semester" -> rawLessons[lessonIndex]["extra"] =
-                                (rawLessons[lessonIndex]["extra"] ?: "").toString() + it
+                                    it == "first half semester" -> rawLessons[lessonIndex].extra =
+                                (rawLessons[lessonIndex].extra ?: "").toString() + it
 
-                            it == "co 2 tygodnie" -> rawLessons[lessonIndex]["frequency"] = 2
+                            it == "co 2 tygodnie" -> rawLessons[lessonIndex].frequency = 2
 
-                            it == "zajęcia w dniach: " -> rawLessons[lessonIndex]["extra"] =
-                                (rawLessons[lessonIndex]["extra"] ?: "").toString() + "HANDLE SPECIFIC DATES" + it //TODO Handle specific dates set
+                            it == "zajęcia w dniach: " -> rawLessons[lessonIndex].extra =
+                                (rawLessons[lessonIndex].extra
+                                    ?: "").toString() + "HANDLE SPECIFIC DATES" + it //TODO Handle specific dates set
 
                             it.contains("""^([\w ]+\d+)$|^[\w. ]*AUD[\w. ]*$""".toRegex()) -> { // TODO Obsługa nowych elementów na SISie
                                 // Start populating new lesson if place was found again
-                                if (rawLessons[lessonIndex]["place"] != null) lessonIndex++
-                                rawLessons[lessonIndex]["place"] = it
+                                if (rawLessons[lessonIndex].place != null) lessonIndex++
+                                rawLessons[lessonIndex].place = it
                             }
 
-                            else -> rawLessons[lessonIndex]["extra"] =
-                                (rawLessons[lessonIndex]["extra"] ?: "").toString() + "NOT RECOGNIZED" + it
+                            else -> rawLessons[lessonIndex].extra =
+                                (rawLessons[lessonIndex].extra
+                                    ?: "").toString() + "NOT RECOGNIZED" + it
                         }
                     }
                 }
 
                 rawLessons.forEach { rawLesson ->
-                    val lesson = Lesson(
-                        name = rawLesson["name"] as String,
-                        type = rawLesson["type"] as Char,
-                        teacher = rawLesson["teacher"] as String,
-                        place = rawLesson["place"] as String,
-                        weekDay = index,
-                        startTime = time,
-                        endTime = time.plusHours(1),
-                        group = rawLesson["group"] as Char?,
-                        startDate = rawLesson["startDate"] as LocalDate?,
-                        endDate = rawLesson["endDate"] as LocalDate?,
-                        frequency = if (rawLesson["frequency"] == null) 1 else rawLesson["frequency"] as Int,
-                        extra = rawLesson["extra"] as String?
-                    )
-                    Log.d("READ LESSON", lesson.toString())
-                    schedule.add(lesson)
+                    rawLesson.weekDay = index
+                    rawLesson.startTime = time
+                    rawLesson.endTime = time.plusHours(1)
+                    val lesson = rawLesson.toLesson()
+                    if (lesson == null) {
+                        Log.e("READ LESSON", "Unable to convert to lesson: $rawLesson")
+                    } else {
+                        Log.d("READ LESSON", lesson.toString())
+                        schedule.add(lesson)
+                    }
                 }
             }
         }

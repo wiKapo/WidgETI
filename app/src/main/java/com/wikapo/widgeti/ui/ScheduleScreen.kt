@@ -51,7 +51,7 @@ import com.wikapo.widgeti.components.NavigationBar
 import com.wikapo.widgeti.data.AppDatabase
 import com.wikapo.widgeti.data.Lesson
 import com.wikapo.widgeti.data.Settings
-import com.wikapo.widgeti.getExampleSchedule
+import com.wikapo.widgeti.util.getExampleSchedule
 import com.wikapo.widgeti.ui.theme.WidgETITheme
 import com.wikapo.widgeti.util.nextDay
 import com.wikapo.widgeti.util.previousDay

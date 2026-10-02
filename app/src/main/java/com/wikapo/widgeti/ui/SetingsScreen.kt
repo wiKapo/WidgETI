@@ -50,8 +50,8 @@ import com.wikapo.widgeti.R
 import com.wikapo.widgeti.components.showShortToast
 import com.wikapo.widgeti.data.AppDatabase
 import com.wikapo.widgeti.data.Settings
-import com.wikapo.widgeti.parseGroupName
-import com.wikapo.widgeti.parseSchedule
+import com.wikapo.widgeti.util.parseGroupName
+import com.wikapo.widgeti.util.parseSchedule
 import com.wikapo.widgeti.ui.theme.WidgETITheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

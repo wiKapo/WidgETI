@@ -40,7 +40,7 @@ import com.wikapo.widgeti.R
 import com.wikapo.widgeti.components.NavigationBar
 import com.wikapo.widgeti.data.AppDatabase
 import com.wikapo.widgeti.data.Lesson
-import com.wikapo.widgeti.getExampleSchedule
+import com.wikapo.widgeti.util.getExampleSchedule
 
 private const val SHOW_EXTRA = true //TODO Change to false after testing
 
